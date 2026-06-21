@@ -3057,25 +3057,30 @@ async function pullRequestsFromSharePoint(){
       mode:'cors'
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    const spItems=(data.value||data||[]);
-    // Merge SP items into REQ.queue (add if reqId not already exists)
+    const spItems=await res.json();
     let added=0;
-    for(const sp of spItems){
-      const reqId=sp.Title||sp.ReqID||'';
+    for(const sp of (Array.isArray(spItems)?spItems:[])){
+      const reqId=sp.Title||'';
       const exists=(REQ.queue||[]).find(r=>r.request_id===reqId);
       if(!exists && reqId){
         REQ.queue.push({
           request_id: reqId,
           requester_name: sp.Requester||'',
           department: sp.Requester||'',
-          items:[{mat_code:sp.MatCode||'',item_name:sp.ItemName||'',qty:sp.Qty||0,unit:sp.Unit||'',stock_remaining:0,key:''}],
+          items:[{
+            mat_code: sp.MatCode||'',
+            item_name: sp.ItemName||'',
+            qty: sp.Qty||0,
+            unit: sp.Unit||'',
+            stock_remaining: 0,
+            key: ''
+          }],
           needed_date: sp.NeededDate?sp.NeededDate.slice(0,10):'',
           note: sp.Remark||'',
           storeroom: CFG.siteName||'BNS1-TIMCO',
-          status: (sp.StatusValue||sp.Status||'pending').toLowerCase(),
+          status: (sp.Status?.Value||'pending').toLowerCase(),
           submitted_at: sp.Created?new Date(sp.Created).toLocaleString('th-TH'):'',
-          sp_item_id: sp.ID||sp.id||null
+          sp_item_id: sp.ID||null
         });
         added++;
       }
