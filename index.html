@@ -3115,16 +3115,13 @@ async function syncToSharePoint(){
     const qty=b.qty||0;
     const status=qty===0?'Zero':qty<=2?'Low':'OK';
     return {
-      title_key: k,
       mat_code: b.code||'',
       item_name: b.name||'',
-      category: b.category||'',
       qty: qty,
       unit: b.unit||'',
       storeroom: b.store||'',
       avg_cost: b.avg_cost||0,
       status: status,
-      last_updated: now
     };
   });
 
