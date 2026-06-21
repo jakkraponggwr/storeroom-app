@@ -1,0 +1,3353 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storeroom Management — BNS1-TIMCO</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#181c27;--bg3:#1e2336;--card:#232840;
+  --border:#2e3450;--border2:#3a4060;
+  --text:#e8eaf6;--text2:#9aa0c0;--text3:#5c6380;
+  --teal:#2dd4a8;--teal2:#1a9e7d;--teal-bg:#0d2e25;
+  --blue:#5b8dee;--blue2:#3a6fd8;--blue-bg:#0d1a35;
+  --amber:#f5a623;--amber2:#c97e0a;--amber-bg:#2a1e08;
+  --green:#4ade80;--green-bg:#0d2416;
+  --coral:#f87171;--coral-bg:#2a1010;
+  --purple:#a78bfa;--purple-bg:#1a1030;
+  --radius:10px;--radius-sm:6px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:13px}
+body{display:flex;flex-direction:column}
+
+/* TOP BAR */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.topbar-logo{width:28px;height:28px;background:var(--teal-bg);border:1px solid var(--teal2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.topbar-name{font-weight:600;font-size:14px;color:var(--text)}
+.topbar-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.topbar-right{font-size:11px;color:var(--text3)}
+
+/* NAV */
+.nav{display:flex;gap:2px;padding:14px 24px 0;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.tab{padding:8px 16px;border-radius:var(--radius-sm) var(--radius-sm) 0 0;cursor:pointer;color:var(--text2);font-size:12px;font-weight:500;border:1px solid transparent;border-bottom:none;transition:all .2s;white-space:nowrap;user-select:none}
+.tab:hover{color:var(--text);background:var(--bg3)}
+.tab.active{color:var(--text);background:var(--card);border-color:var(--border);position:relative}
+.tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:var(--card)}
+.tab-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:5px}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.page{display:none;flex-direction:column;gap:16px}
+.page.active{display:flex}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:14px}
+
+/* FORM */
+.row{display:grid;gap:10px}
+.row-2{grid-template-columns:1fr 1fr}
+.row-3{grid-template-columns:1fr 1fr 1fr}
+.row-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:3px}
+label{font-size:11px;color:var(--text2)}
+input,select,textarea{width:100%;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;font-family:inherit;outline:none;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+select option{background:var(--bg2)}
+textarea{resize:vertical;min-height:64px;line-height:1.6}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-primary{background:var(--teal2);color:#fff}
+.btn-primary:hover{background:var(--teal)}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--border2);background:var(--border)}
+.btn-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
+
+/* BADGE */
+.badge{display:inline-flex;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.badge-teal{background:var(--teal-bg);color:var(--teal)}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-coral{background:var(--coral-bg);color:var(--coral)}
+.badge-purple{background:var(--purple-bg);color:var(--purple)}
+.badge-gray{background:#1e2336;color:var(--text2)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{text-align:left;color:var(--text3);font-weight:500;padding:7px 10px;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:rgba(255,255,255,.018)}
+.qty-pos{color:var(--green)}
+.qty-neg{color:var(--coral)}
+.qty-zero{color:var(--text3)}
+
+/* ALERT */
+.alert{padding:10px 12px;border-radius:var(--radius-sm);font-size:12px;line-height:1.5}
+.alert-warn{background:var(--amber-bg);color:var(--amber);border:1px solid #3a2508}
+.alert-ok{background:var(--teal-bg);color:var(--teal);border:1px solid #0d3028}
+.alert-err{background:var(--coral-bg);color:var(--coral);border:1px solid #3a1515}
+
+/* UPLOAD */
+.upload-zone{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;transition:border-color .2s;color:var(--text2);display:block}
+.upload-zone:hover{border-color:var(--blue)}
+.upload-zone input{display:none}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.stat-val{font-size:24px;font-weight:600;color:var(--text);line-height:1}
+.stat-lbl{font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.stat-delta{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* MEMO */
+.memo-box{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:16px;font-size:12px;line-height:1.9;color:var(--text);white-space:pre-wrap;font-family:'DM Mono',monospace}
+
+/* ใบเบิก */
+.req-doc{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden}
+.req-doc-header{background:var(--bg3);padding:14px 18px;border-bottom:1px solid var(--border)}
+.req-doc-header-top{display:flex;justify-content:space-between;align-items:flex-start}
+.req-doc-title{font-size:15px;font-weight:600;color:var(--text)}
+.req-doc-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.req-doc-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
+.req-meta-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.req-meta-val{font-size:12px;color:var(--text);font-weight:500}
+.req-doc-body{padding:14px 18px}
+.req-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px}
+.req-tbl th{text-align:left;color:var(--text3);font-size:10px;font-weight:500;padding:5px 8px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.4px}
+.req-tbl td{padding:8px 8px;color:var(--text);border-bottom:1px solid var(--border)}
+.req-tbl tr:last-child td{border-bottom:none}
+.req-doc-footer{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;padding:14px 18px;border-top:1px solid var(--border);background:var(--bg3)}
+.sign-block{display:flex;flex-direction:column}
+.sign-line{height:1px;background:var(--border2);margin-top:24px;margin-bottom:6px}
+.sign-label{font-size:10px;color:var(--text3);text-align:center}
+.sign-name{font-size:11px;color:var(--text2);text-align:center;margin-top:2px}
+.draft-stamp{display:inline-block;border:2px solid var(--amber);color:var(--amber);font-size:10px;font-weight:700;padding:2px 10px;border-radius:4px;letter-spacing:1.5px;transform:rotate(-2deg);opacity:.85}
+
+/* DIVIDER */
+.section-divider{height:1px;background:var(--border);margin:4px 0}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 16px;font-size:12px;color:var(--text);opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;z-index:999;max-width:320px}
+#toast.show{opacity:1;transform:translateY(0)}
+
+/* CONFIRM CHIP */
+.confirm-chip{font-size:11px;color:var(--teal);display:none}
+
+/* REPORT ENHANCEMENTS */
+.activity-bar-row{display:flex;align-items:center;gap:10px}
+.activity-bar-label{font-size:11px;color:var(--text2);width:80px;flex-shrink:0}
+.activity-bar-track{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.activity-bar-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.activity-bar-count{font-size:11px;color:var(--text3);width:28px;text-align:right;flex-shrink:0}
+
+/* Dashboard KPI cards */
+.dash-kpi-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 14px 12px;display:flex;flex-direction:column;gap:3px}
+.dash-kpi-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:6px;flex-shrink:0}
+.dash-kpi-val{font-size:22px;font-weight:700;color:var(--text);line-height:1.1}
+.dash-kpi-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;line-height:1.3}
+.dash-kpi-unit{font-size:10px;color:var(--text3)}
+/* status pills */
+.pill-out{background:var(--coral-bg);color:var(--coral);border:1px solid #3a1515;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;white-space:nowrap}
+.pill-low{background:var(--amber-bg);color:var(--amber);border:1px solid #3a2508;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;white-space:nowrap}
+.pill-ok{background:var(--teal-bg);color:var(--teal);border:1px solid #0d3028;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;white-space:nowrap}
+.top-item-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border)}
+.top-item-row:last-child{border-bottom:none}
+.top-item-rank{font-size:10px;color:var(--text3);width:16px;flex-shrink:0;text-align:right}
+.top-item-name{font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top-item-qty{font-size:11px;font-weight:600;color:var(--coral);flex-shrink:0}
+.status-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.pill-ok{background:var(--teal-bg);color:var(--teal)}
+.pill-low{background:var(--amber-bg);color:var(--amber)}
+.pill-zero{background:var(--coral-bg);color:var(--coral)}
+.tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:700px){#report-top-row{grid-template-columns:1fr}}
+
+/* SEARCHABLE DROPDOWN */
+.sd-wrap{position:relative;width:100%}
+.sd-input{width:100%;padding:8px 32px 8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;font-family:inherit;outline:none;cursor:pointer;transition:border-color .2s;user-select:none}
+.sd-input:focus,.sd-input.open{border-color:var(--blue)}
+.sd-arrow{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:10px;pointer-events:none;transition:transform .2s}
+.sd-input.open~.sd-arrow{transform:translateY(-50%) rotate(180deg)}
+.sd-panel{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);z-index:200;display:none;flex-direction:column;box-shadow:0 8px 24px rgba(0,0,0,.4);max-height:260px}
+.sd-panel.open{display:flex}
+.sd-search{padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sd-search input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 9px;color:var(--text);font-size:12px;font-family:inherit;outline:none}
+.sd-search input:focus{border-color:var(--blue)}
+.sd-list{overflow-y:auto;flex:1}
+.sd-opt{padding:8px 12px;font-size:12px;color:var(--text2);cursor:pointer;transition:background .15s;line-height:1.4}
+.sd-opt:hover,.sd-opt.focused{background:var(--bg3);color:var(--text)}
+.sd-opt.selected{color:var(--teal)}
+.sd-opt-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.sd-empty{padding:12px;font-size:12px;color:var(--text3);text-align:center}
+
+@media(max-width:700px){
+  .row-3,.row-4{grid-template-columns:1fr 1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .req-doc-meta,.req-doc-footer{grid-template-columns:1fr}
+  .nav{padding:10px 12px 0;gap:0;overflow-x:auto}
+  .content{padding:14px 12px}
+  .topbar{padding:0 14px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">📦</div>
+    <div>
+      <div class="topbar-name">Storeroom Management</div>
+      <div class="topbar-sub">BNS1 / BNEXT — Banpu NEXT | Opening: MAY-26</div>
+    </div>
+  </div>
+  <div class="topbar-right" id="clock"></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="tab active" onclick="switchTab('gr')"><span class="tab-dot" style="background:var(--blue)"></span>รับของ (GR)</div>
+  <div class="tab" onclick="switchTab('issue')"><span class="tab-dot" style="background:var(--teal)"></span>Issue / Transfer</div>
+  <div class="tab" onclick="switchTab('writeoff')"><span class="tab-dot" style="background:var(--coral)"></span>Write-off</div>
+  <div class="tab" onclick="switchTab('report')"><span class="tab-dot" style="background:var(--purple)"></span>Report</div>
+  <div class="tab" onclick="switchTab('dashboard')"><span class="tab-dot" style="background:var(--green)"></span>Dashboard</div>
+  <div class="tab" onclick="switchTab('request')" id="tab-request"><span class="tab-dot" style="background:var(--amber)"></span>📋 ขอเบิกของ <span id="req-badge" style="display:none;background:var(--coral);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px">0</span></div>
+  <div class="tab" onclick="switchTab('config')"><span class="tab-dot" style="background:var(--text3)"></span>⚙️ Config</div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- ══ GR ══ -->
+  <div class="page active" id="page-gr">
+    <div class="card">
+      <div class="card-title">Goods Receive — อ้างอิง PO</div>
+
+      <!-- PO Header -->
+      <div class="row row-4">
+        <div class="field"><label>เลข PO *</label><input id="gr-po" placeholder="D8000000XXX"></div>
+        <div class="field"><label>Supplier</label><input id="gr-supplier" placeholder="ชื่อ Supplier"></div>
+        <div class="field"><label>วันที่รับของ</label><input id="gr-date" type="date"></div>
+        <div class="field"><label>Receipt Status</label>
+          <select id="gr-receipt-status">
+            <option>PARTIAL</option><option>COMPLETE</option><option>WAPPR</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Multi-row items -->
+      <div style="margin-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">รายการ Items</div>
+          <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="addGRRow()">+ เพิ่มแถว</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border)">
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;text-align:left;white-space:nowrap">PO Line</th>
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;text-align:left;white-space:nowrap">Item No.</th>
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;text-align:left;min-width:180px">Description *</th>
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;text-align:right;white-space:nowrap">Qty PO</th>
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;text-align:right;white-space:nowrap">Qty รับจริง *</th>
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;white-space:nowrap">Unit</th>
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;white-space:nowrap">Storeroom</th>
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;white-space:nowrap">Receipt ID</th>
+                <th style="padding:6px 4px"></th>
+              </tr>
+            </thead>
+            <tbody id="gr-rows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="gr-alert" style="margin-top:10px;display:none"></div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-primary" onclick="submitGRMulti()">✓ บันทึก GR ทั้งหมด</button>
+        <button class="btn btn-secondary" onclick="clearGRMulti()">ล้างฟอร์ม</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">GR Log</div>
+      <table class="tbl">
+        <thead><tr><th>TXN</th><th>PO</th><th>Item</th><th style="text-align:right">Qty PO</th><th style="text-align:right">รับจริง</th><th>Variance</th><th>Storeroom</th><th>วันที่</th><th></th></tr></thead>
+        <tbody id="gr-log"><tr><td colspan="9" style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีรายการ GR</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ ISSUE / TRANSFER ══ -->
+  <div class="page" id="page-issue">
+    <div class="card">
+      <div class="card-title">เพิ่ม Item ใหม่ / อัพเดต Balance</div>
+      <label class="upload-zone" id="upload-zone">
+        <input type="file" accept=".xlsx,.xls,.csv" onchange="handleUpload(this)">
+        <div id="upload-label">
+          <div style="font-size:28px;margin-bottom:8px">📂</div>
+          <div style="font-weight:500;font-size:13px">คลิกเพื่อเลือกไฟล์ Excel (.xlsx)</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px">อัพโหลดไฟล์ Excel เพื่อ merge รายการใหม่เข้า balance ที่มีอยู่</div>
+        </div>
+      </label>
+      <div id="upload-preview" style="display:none;margin-top:12px">
+        <table class="tbl"><thead><tr><th>MAT Code</th><th>Item</th><th>Opening Qty</th><th>Unit</th><th>Storeroom</th></tr></thead>
+        <tbody id="balance-preview-body"></tbody></table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Issue / Transfer</div>
+
+      <!-- Header fields -->
+      <div class="row row-4">
+        <div class="field"><label>ประเภท *</label>
+          <select id="txn-type" onchange="toggleTransfer()">
+            <option value="issue">Issue — เบิกออก</option>
+            <option value="transfer">Transfer — ย้าย storeroom</option>
+          </select>
+        </div>
+        <div class="field"><label>ผู้เบิก / แผนก</label><input id="txn-requester" placeholder="ชื่อผู้เบิก หรือ แผนก"></div>
+        <div class="field"><label>WO / Reference</label><input id="txn-wo" placeholder="WO-XXXX หรือ Project"></div>
+        <div class="field"><label>วันที่</label><input id="txn-date" type="date"></div>
+      </div>
+      <div class="row row-2" id="transfer-fields" style="display:none;margin-top:10px">
+        <div class="field"><label>จาก Storeroom</label>
+          <select id="txn-from"><option>BNS1-TIMCO</option><option>BNS1-BKKHO</option><option>BNEXT-TIMCO</option></select>
+        </div>
+        <div class="field"><label>ไป Storeroom</label>
+          <select id="txn-to"><option>BNS1-BKKHO</option><option>BNS1-TIMCO</option><option>BNEXT-TIMCO</option></select>
+        </div>
+      </div>
+
+      <!-- Multi-row items -->
+      <div style="margin-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">รายการ Items</div>
+          <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="addIssueRow()">+ เพิ่มแถว</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border)">
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;text-align:left;min-width:200px">Item *</th>
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;text-align:right;white-space:nowrap">Qty *</th>
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;white-space:nowrap">Unit</th>
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;white-space:nowrap">Stock คงเหลือ</th>
+                <th style="padding:6px 8px;color:var(--text3);font-weight:500;white-space:nowrap">หลังเบิก</th>
+                <th style="padding:6px 4px"></th>
+              </tr>
+            </thead>
+            <tbody id="issue-rows"></tbody>
+          </table>
+          <datalist id="issue-items-datalist"></datalist>
+        </div>
+      </div>
+
+      <div id="issue-alert" style="margin-top:10px;display:none"></div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-primary" onclick="submitIssueMulti()">✓ บันทึก + Generate ใบเบิก</button>
+        <button class="btn btn-secondary" onclick="clearIssueMulti()">ล้างฟอร์ม</button>
+      </div>
+    </div>
+
+    <!-- ใบเบิกวัสดุ -->
+    <div class="card" id="req-doc-card" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="card-title" style="margin-bottom:0">ใบเบิกวัสดุ — Material Requisition</div>
+        <span class="draft-stamp">DRAFT</span>
+      </div>
+      <div class="req-doc">
+        <div class="req-doc-header">
+          <div class="req-doc-header-top">
+            <div>
+              <div class="req-doc-title">ใบเบิกวัสดุ / Material Requisition Form</div>
+              <div class="req-doc-sub">BNS1-TIMCO Storeroom — Banpu NEXT</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:14px;font-weight:600;color:var(--teal)" id="doc-id">—</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px" id="doc-date">—</div>
+            </div>
+          </div>
+          <div class="req-doc-meta">
+            <div><div class="req-meta-label">ผู้เบิก</div><div class="req-meta-val" id="doc-requester">—</div></div>
+            <div><div class="req-meta-label">WO / Reference</div><div class="req-meta-val" id="doc-wo">—</div></div>
+            <div><div class="req-meta-label">Storeroom</div><div class="req-meta-val" id="doc-store">—</div></div>
+          </div>
+        </div>
+        <div class="req-doc-body">
+          <table class="req-tbl">
+            <thead><tr><th>#</th><th>MAT Code</th><th>รายการ</th><th>Unit</th><th style="color:var(--teal)">Qty เบิก</th><th>Qty คงเหลือ</th><th>หมายเหตุ</th></tr></thead>
+            <tbody id="doc-items"></tbody>
+          </table>
+          <div style="font-size:11px;color:var(--text3)">* เอกสาร DRAFT — โปรดตรวจสอบความถูกต้องก่อนส่ง warehouse</div>
+        </div>
+        <div class="req-doc-footer">
+          <div class="sign-block"><div class="sign-line"></div><div class="sign-label">ผู้เบิก / Requester</div><div class="sign-name" id="sign-req">___________</div></div>
+          <div class="sign-block"><div class="sign-line"></div><div class="sign-label">ผู้จ่ายของ / Storekeeper</div><div class="sign-name">___________</div></div>
+          <div class="sign-block"><div class="sign-line"></div><div class="sign-label">ผู้อนุมัติ / Approver</div><div class="sign-name">___________</div></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="copyReqDoc()">📋 Copy ใบเบิก</button>
+        <span class="confirm-chip" id="copy-req-ok">✓ Copied!</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Transaction Log</div>
+      <table class="tbl"><thead><tr><th>TXN</th><th>Type</th><th>Item</th><th>Qty</th><th>ผู้เบิก</th><th>WO/Ref</th><th>From → To</th><th>วันที่</th><th></th></tr></thead>
+      <tbody id="txn-log"><tr><td colspan="9" style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีรายการ</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ══ WRITE-OFF ══ -->
+  <div class="page" id="page-writeoff">
+    <div class="card">
+      <div class="card-title">Write-off Input</div>
+      <div class="row row-4">
+        <div class="field"><label>ประเภท *</label>
+          <select id="wo-type" onchange="updateWOFields()">
+            <option value="sale">Sale — ขาย</option>
+            <option value="donate">Donate — บริจาค</option>
+            <option value="damage">Damage — เสียหาย</option>
+          </select>
+        </div>
+        <div class="field"><label>Item *</label><div class="sd-wrap" id="sd-wo-item"></div></div>
+        <div class="field"><label>Qty *</label><input id="wo-qty" type="number" placeholder="0" min="1"></div>
+        <div class="field"><label>วันที่</label><input id="wo-date" type="date"></div>
+      </div>
+      <div class="row row-2" style="margin-top:10px">
+        <div class="field"><label id="wo-l1">ราคาขาย (THB)</label><input id="wo-v1" placeholder="0.00"></div>
+        <div class="field"><label id="wo-l2">ผู้ซื้อ / บริษัท</label><input id="wo-v2" placeholder="ชื่อผู้ซื้อ"></div>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>หมายเหตุ / เหตุผล *</label>
+        <textarea id="wo-reason" placeholder="อธิบายเหตุผลการ write-off..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="generateMemo()">✓ บันทึก + Generate Memo Draft</button>
+        <button class="btn btn-secondary" onclick="clearWO()">ล้างฟอร์ม</button>
+      </div>
+    </div>
+
+    <div class="card" id="memo-card" style="display:none">
+      <div class="card-title">Write-off Memo Draft</div>
+      <div class="memo-box" id="memo-content"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="copyMemo()">📋 Copy Memo</button>
+        <span class="confirm-chip" id="copy-memo-ok">✓ Copied!</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Write-off Log</div>
+      <table class="tbl"><thead><tr><th>TXN</th><th>Type</th><th>Item</th><th style="text-align:right">Qty</th><th>Detail</th><th>ผู้ซื้อ / บริษัท</th><th>หมายเหตุ</th><th>วันที่</th></tr></thead>
+      <tbody id="wo-log"><tr><td colspan="8" style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีรายการ</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ══ REPORT ══ -->
+  <div class="page" id="page-report">
+
+    <!-- KPI row -->
+    <div class="stats" id="kpi-row">
+      <div class="stat" style="border-left:3px solid var(--blue)">
+        <div class="stat-val" id="s-items">0</div>
+        <div class="stat-lbl">Items in stock</div>
+        <div class="stat-delta" id="s-items-low"></div>
+      </div>
+      <div class="stat" style="border-left:3px solid var(--teal)">
+        <div class="stat-val" id="s-gr">0</div>
+        <div class="stat-lbl">GR transactions</div>
+        <div class="stat-delta" id="s-gr-qty"></div>
+      </div>
+      <div class="stat" style="border-left:3px solid var(--amber)">
+        <div class="stat-val" id="s-issue">0</div>
+        <div class="stat-lbl">Issues / Transfers</div>
+        <div class="stat-delta" id="s-issue-qty"></div>
+      </div>
+      <div class="stat" style="border-left:3px solid var(--coral)">
+        <div class="stat-val" id="s-wo">0</div>
+        <div class="stat-lbl">Write-offs</div>
+        <div class="stat-delta" id="s-wo-qty"></div>
+      </div>
+    </div>
+
+    <!-- Activity mini-chart + top items -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" id="report-top-row">
+
+      <!-- Activity by type -->
+      <div class="card" style="padding:14px">
+        <div class="card-title">Transaction Activity</div>
+        <div id="activity-bars" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+
+      <!-- Top moved items -->
+      <div class="card" style="padding:14px">
+        <div class="card-title">Top Items — Most Issued</div>
+        <div id="top-items" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+
+    <!-- Transaction log -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <div class="card-title" style="margin-bottom:0">Transaction Log</div>
+        <select id="filter-month" style="max-width:150px;font-size:11px" onchange="renderReport()"><option value="all">ทุกเดือน</option></select>
+        <select id="filter-type" style="max-width:140px;font-size:11px" onchange="renderReport()">
+          <option value="all">ทุกประเภท</option>
+          <option value="GR">GR</option>
+          <option value="ISSUE">Issue</option>
+          <option value="TRANSFER">Transfer</option>
+          <option value="WRITEOFF">Write-off</option>
+        </select>
+        <input id="filter-search" placeholder="🔍 ค้นหา item / TXN..." style="max-width:180px;font-size:11px;padding:5px 9px" oninput="renderReport()">
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 11px" onclick="exportTxnCSV()">⬇ CSV</button>
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 11px" onclick="exportTxnExcel()">⬇ Excel</button>
+        </div>
+      </div>
+      <table class="tbl" id="r-txn-tbl">
+        <thead>
+          <tr>
+            <th>TXN ID</th>
+            <th>Type</th>
+            <th>Item</th>
+            <th style="text-align:right">Qty</th>
+            <th>Detail</th>
+            <th>วันที่</th>
+          </tr>
+        </thead>
+        <tbody id="r-txn"><tr><td colspan="6" style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีรายการ</td></tr></tbody>
+      </table>
+      <div id="r-txn-count" style="margin-top:10px;font-size:11px;color:var(--text3);text-align:right"></div>
+    </div>
+
+    <!-- Balance report -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <div class="card-title" style="margin-bottom:0">Balance Report</div>
+        <select id="filter-store" style="max-width:160px;font-size:11px" onchange="renderReport()">
+          <option value="all">ทุก Storeroom</option>
+          <option>BNS1-TIMCO</option>
+          <option>BNS1-BKKHO</option>
+          <option>BNEXT-TIMCO</option>
+        </select>
+        <select id="filter-stock" style="max-width:140px;font-size:11px" onchange="renderReport()">
+          <option value="all">ทุก Stock Level</option>
+          <option value="low">⚠ ใกล้หมด / หมด</option>
+          <option value="ok">✓ พร้อมใช้</option>
+        </select>
+        <div style="margin-left:auto">
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 11px" onclick="exportBalanceExcel()">⬇ Export Balance</button>
+        </div>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>MAT Code</th>
+            <th>Item</th>
+            <th>Storeroom</th>
+            <th style="text-align:right">Opening</th>
+            <th style="text-align:right">In (GR)</th>
+            <th style="text-align:right">Out</th>
+            <th style="text-align:right">คงเหลือ</th>
+            <th>Unit</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="r-bal"><tr><td colspan="9" style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีข้อมูล</td></tr></tbody>
+      </table>
+      <div id="r-bal-count" style="margin-top:10px;font-size:11px;color:var(--text3);text-align:right"></div>
+    </div>
+
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="page" id="page-dashboard">
+
+    <!-- Header bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:18px;font-weight:700;color:var(--text)">ภาพรวมคลังสินค้า</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Stock Dashboard — ข้อมูล ณ ปัจจุบัน</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <select id="dash-filter-store" style="padding:6px 10px;font-size:11px;min-width:150px">
+          <option value="">📦 ทุก Storeroom</option>
+        </select>
+        <button id="dash-refresh-btn" style="padding:6px 12px;font-size:11px;background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal2);border-radius:var(--radius-sm);cursor:pointer">↻ รีเฟรช</button>
+        <button id="dash-export-btn" style="padding:6px 12px;font-size:11px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue2);border-radius:var(--radius-sm);cursor:pointer">📤 Export Snapshot</button>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px" id="dash-kpi-row">
+      <div class="dash-kpi-card" style="border-top:3px solid var(--blue)">
+        <div class="dash-kpi-icon" style="background:var(--blue-bg);color:var(--blue)">📦</div>
+        <div class="dash-kpi-val" id="d-skus">—</div>
+        <div class="dash-kpi-lbl">จำนวนรายการสินค้า</div>
+        <div class="dash-kpi-unit">รายการ</div>
+      </div>
+      <div class="dash-kpi-card" style="border-top:3px solid var(--teal)">
+        <div class="dash-kpi-icon" style="background:var(--teal-bg);color:var(--teal)">🔢</div>
+        <div class="dash-kpi-val" id="d-qty">—</div>
+        <div class="dash-kpi-lbl">สินค้าคงเหลือทั้งหมด</div>
+        <div class="dash-kpi-unit">ชิ้น</div>
+      </div>
+      <div class="dash-kpi-card" style="border-top:3px solid var(--amber)">
+        <div class="dash-kpi-icon" style="background:var(--amber-bg);color:var(--amber)">💰</div>
+        <div class="dash-kpi-val" id="d-value">—</div>
+        <div class="dash-kpi-lbl">มูลค่าสต็อกรวม</div>
+        <div class="dash-kpi-unit">บาท</div>
+      </div>
+      <div class="dash-kpi-card" style="border-top:3px solid var(--teal)">
+        <div class="dash-kpi-icon" style="background:var(--teal-bg);color:var(--teal)">📥</div>
+        <div class="dash-kpi-val" id="d-in">—</div>
+        <div class="dash-kpi-lbl">รับเข้าเดือนนี้</div>
+        <div class="dash-kpi-unit">ครั้ง</div>
+      </div>
+      <div class="dash-kpi-card" style="border-top:3px solid var(--amber)">
+        <div class="dash-kpi-icon" style="background:var(--amber-bg);color:var(--amber)">⚠️</div>
+        <div class="dash-kpi-val" id="d-low">—</div>
+        <div class="dash-kpi-lbl">สินค้าใกล้หมด</div>
+        <div class="dash-kpi-unit">รายการ</div>
+      </div>
+      <div class="dash-kpi-card" style="border-top:3px solid var(--coral)">
+        <div class="dash-kpi-icon" style="background:var(--coral-bg);color:var(--coral)">🚫</div>
+        <div class="dash-kpi-val" id="d-zero">—</div>
+        <div class="dash-kpi-lbl">สินค้าหมดสต็อก</div>
+        <div class="dash-kpi-unit">รายการ</div>
+      </div>
+    </div>
+
+    <!-- ① Interactive Stock Balance (moved to top) -->
+    <div class="card" style="padding:16px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div class="card-title" style="margin:0">① Stock Balance — Interactive</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <input id="sb-search" type="text" placeholder="🔍 ค้นหา item / MAT code..."
+            style="padding:5px 10px;font-size:11px;min-width:200px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text)">
+          <select id="sb-filter-store"
+            style="padding:5px 8px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text)">
+            <option value="">ทุก Storeroom</option>
+          </select>
+          <select id="sb-filter-status"
+            style="padding:5px 8px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text)">
+            <option value="">ทุกสถานะ</option>
+            <option value="ok">ปกติ</option>
+            <option value="low">ใกล้หมด (≤2)</option>
+            <option value="zero">หมดสต็อก</option>
+          </select>
+          <select id="sb-sort"
+            style="padding:5px 8px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text)">
+            <option value="value-desc">มูลค่า ↓</option>
+            <option value="value-asc">มูลค่า ↑</option>
+            <option value="qty-desc">Qty ↓</option>
+            <option value="qty-asc">Qty ↑</option>
+            <option value="name-asc">ชื่อ A→Z</option>
+          </select>
+          <span id="sb-count" style="font-size:10px;color:var(--text3)"></span>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px">Top 20 items by value — คลิก bar เพื่อ highlight ในตาราง</div>
+        <div id="sb-chart" style="display:flex;align-items:flex-end;gap:3px;height:80px;overflow-x:auto;padding-bottom:4px"></div>
+        <div id="sb-chart-labels" style="display:flex;gap:3px;overflow-x:auto"></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="tbl" style="width:100%">
+          <thead>
+            <tr>
+              <th onclick="sbToggleSort('name')" style="cursor:pointer;user-select:none">ชื่อ <span id="sb-th-name"></span></th>
+              <th onclick="sbToggleSort('code')" style="cursor:pointer;user-select:none">MAT Code <span id="sb-th-code"></span></th>
+              <th onclick="sbToggleSort('store')" style="cursor:pointer;user-select:none">Storeroom <span id="sb-th-store"></span></th>
+              <th onclick="sbToggleSort('qty')" style="cursor:pointer;user-select:none;text-align:right">Qty <span id="sb-th-qty"></span></th>
+              <th style="text-align:right">Unit</th>
+              <th onclick="sbToggleSort('avg_cost')" style="cursor:pointer;user-select:none;text-align:right">Avg Cost <span id="sb-th-avg_cost"></span></th>
+              <th onclick="sbToggleSort('value')" style="cursor:pointer;user-select:none;text-align:right">มูลค่า (THB) <span id="sb-th-value"></span></th>
+              <th style="text-align:center">สถานะ</th>
+            </tr>
+          </thead>
+          <tbody id="sb-tbody"></tbody>
+        </table>
+      </div>
+      <div id="sb-pagination" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px"></div>
+    </div>
+
+    <!-- ② Donut + bar chart -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:12px;margin-bottom:12px">
+      <div class="card" style="padding:16px">
+        <div class="card-title">② มูลค่าสต็อกตามคลัง</div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <svg id="d-donut-store" width="110" height="110" viewBox="0 0 110 110" style="flex-shrink:0"></svg>
+          <div id="d-legend-store" style="flex:1;display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+      <div class="card" style="padding:16px">
+        <div class="card-title">③ มูลค่าตามหมวดหมู่</div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <svg id="d-donut-cat" width="110" height="110" viewBox="0 0 110 110" style="flex-shrink:0"></svg>
+          <div id="d-legend-cat" style="flex:1;display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+      <div class="card" style="padding:16px">
+        <div class="card-title">④ สินค้าเข้า–ออก รายเดือน</div>
+        <div style="display:flex;gap:12px;margin-bottom:10px">
+          <span style="font-size:10px;color:var(--teal)">■ รับเข้า</span>
+          <span style="font-size:10px;color:var(--amber)">■ เบิกออก</span>
+        </div>
+        <div id="d-monthly-chart" style="display:flex;align-items:flex-end;gap:6px;height:90px"></div>
+      </div>
+    </div>
+
+    <!-- ⑤ Top issued + Low/Zero stock -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="card" style="padding:16px">
+        <div class="card-title">⑤ Top 10 สินค้าที่ถูกเบิกมากที่สุด</div>
+        <div id="d-top-issue" style="display:flex;flex-direction:column;gap:7px"></div>
+      </div>
+      <div class="card" style="padding:16px">
+        <div class="card-title">⑥ สินค้าใกล้หมด / หมดสต็อก</div>
+        <table class="tbl" style="width:100%">
+          <thead><tr>
+            <th>รหัสสินค้า</th><th>ชื่อสินค้า</th><th style="text-align:right">คงเหลือ</th><th>สถานะ</th>
+          </tr></thead>
+          <tbody id="d-low-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Item detail popup -->
+    <div id="sb-popup" style="display:none;position:fixed;z-index:500;background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);padding:16px;min-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.5)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div id="sb-popup-title" style="font-size:13px;font-weight:700;color:var(--text)"></div>
+        <button onclick="$('sb-popup').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;line-height:1">×</button>
+      </div>
+      <div id="sb-popup-body" style="display:flex;flex-direction:column;gap:6px;font-size:12px"></div>
+    </div>
+
+  </div>
+
+  <!-- ══ REQUEST (ขอเบิกของ) ══ -->
+  <div class="page" id="page-request">
+
+    <!-- Pending requests queue (visible to Jack only) -->
+    <div class="card" id="req-pending-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="card-title" style="margin-bottom:0">📥 คิว Request ที่รอดำเนินการ</div>
+        <span style="font-size:11px;color:var(--text3)">กด "ตัด Stock" เพื่อ Issue ทันที</span>
+      </div>
+      <div id="req-queue-list">
+        <div style="color:var(--text3);text-align:center;padding:24px;font-size:12px">ยังไม่มี Request ที่รอดำเนินการ</div>
+      </div>
+    </div>
+
+    <!-- Requester form -->
+    <div class="card">
+      <div class="card-title">📋 ฟอร์มขอเบิกของ — กรอกรายการที่ต้องการ</div>
+      <div class="row row-2" style="margin-bottom:10px">
+        <div class="field">
+          <label>ชื่อผู้เบิก *</label>
+          <input id="req-name" type="text" placeholder="ชื่อ-นามสกุล">
+        </div>
+        <div class="field">
+          <label>แผนก / ทีม *</label>
+          <input id="req-dept" type="text" placeholder="เช่น O&M, Engineering">
+        </div>
+      </div>
+      <div class="row row-2" style="margin-bottom:10px">
+        <div class="field">
+          <label>วันที่ต้องการ (urgency) *</label>
+          <input id="req-needed-date" type="date">
+        </div>
+        <div class="field">
+          <label>Storeroom</label>
+          <select id="req-storeroom">
+            <option value="">— เลือก Storeroom —</option>
+            <option value="BNS1-TIMCO">BNS1-TIMCO</option>
+            <option value="BNS1-BKKHO">BNS1-BKKHO</option>
+            <option value="BNEXT-TIMCO">BNEXT-TIMCO</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Multi-item rows -->
+      <div style="margin-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">รายการที่ขอเบิก</span>
+          <button class="btn btn-secondary" onclick="addReqRow()" style="font-size:11px;padding:5px 10px">+ เพิ่มรายการ</button>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border)">
+              <th style="text-align:left;color:var(--text3);padding:5px 6px;font-weight:500;font-size:11px;width:50%">รายการ (MAT Code - ชื่อ)</th>
+              <th style="text-align:left;color:var(--text3);padding:5px 6px;font-weight:500;font-size:11px;width:20%">จำนวนที่ขอ</th>
+              <th style="text-align:left;color:var(--text3);padding:5px 6px;font-weight:500;font-size:11px;width:20%">Stock คงเหลือ</th>
+              <th style="width:10%"></th>
+            </tr>
+          </thead>
+          <tbody id="req-rows"></tbody>
+        </table>
+        <datalist id="req-items-datalist"></datalist>
+      </div>
+
+      <div class="field" style="margin-top:10px">
+        <label>หมายเหตุ / เหตุผล</label>
+        <textarea id="req-note" placeholder="ระบุเหตุผลการขอเบิก หรือ WO Number (ถ้ามี)" style="min-height:52px"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="submitRequest()">📤 ส่ง Request</button>
+        <button class="btn btn-secondary" onclick="clearReqForm()">ล้าง</button>
+        <span id="req-send-status" style="font-size:11px;color:var(--text3)"></span>
+      </div>
+    </div>
+
+    <!-- Request history -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:0">📜 ประวัติ Request</div>
+        <button class="btn btn-secondary" onclick="clearReqHistory()" style="font-size:11px;padding:4px 10px">ล้างประวัติ</button>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>#</th><th>ผู้เบิก / แผนก</th><th>รายการ</th><th>จำนวน</th><th>ต้องการภายใน</th><th>สถานะ</th><th>วันที่ส่ง</th></tr></thead>
+        <tbody id="req-history-body"><tr><td colspan="7" style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีประวัติ</td></tr></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ══ CONFIG ══ -->
+  <div class="page" id="page-config">
+    <div class="card" style="max-width:560px">
+      <div class="card-title">⚙️ การตั้งค่าระบบ</div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)">📧 Notification Settings</div>
+        <div class="field" style="margin-bottom:10px">
+          <label>Power Automate Flow URL</label>
+          <input id="cfg-flow-url" type="text" placeholder="https://prod-xx.logic.azure.com/workflows/..." style="font-size:11px;font-family:monospace">
+          <span style="font-size:10px;color:var(--text3);margin-top:3px;display:block">HTTP POST URL จาก Power Automate trigger</span>
+        </div>
+        <div class="field" style="margin-bottom:10px">
+          <label>ชื่อผู้รับแจ้ง (สำหรับ email/Teams)</label>
+          <input id="cfg-approver-name" type="text" placeholder="เช่น Jack">
+        </div>
+        <div class="field" style="margin-bottom:10px">
+          <label>อีเมลผู้รับแจ้ง</label>
+          <input id="cfg-approver-email" type="email" placeholder="jack@banpunext.com">
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)">🏭 Storeroom Info</div>
+        <div class="field" style="margin-bottom:10px">
+          <label>ชื่อ Storeroom / Site</label>
+          <input id="cfg-site-name" type="text" placeholder="เช่น BNS1-TIMCO">
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)">🔄 SharePoint Stock Sync</div>
+        <div class="field" style="margin-bottom:10px">
+          <label>SharePoint Sync Flow URL</label>
+          <input id="cfg-sync-url" type="text" placeholder="https://...powerautomate.../storeroom-stock-sync..." style="font-size:11px;font-family:monospace">
+          <span style="font-size:10px;color:var(--text3);margin-top:3px;display:block">HTTP POST URL จาก "Storeroom Stock Sync" Flow</span>
+        </div>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-primary" onclick="syncToSharePoint()" style="background:var(--blue2)">🔄 Sync Stock → SharePoint</button>
+          <span id="sync-status" style="font-size:11px;color:var(--text3)"></span>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text3);line-height:1.6">
+          กดปุ่มนี้เพื่ออัปเดต Stock Balance บน SharePoint List ทีมงานจะเห็นข้อมูล stock ล่าสุดทันที
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveConfig()">💾 บันทึก Config</button>
+        <button class="btn btn-secondary" onclick="testNotification()">🧪 ทดสอบ Notification</button>
+        <span id="cfg-status" style="font-size:11px;color:var(--text3)"></span>
+      </div>
+
+      <div style="margin-top:20px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);font-size:11px;color:var(--text3);line-height:1.7">
+        <strong style="color:var(--text2)">💡 วิธีใช้:</strong><br>
+        1. ทีมงานกรอกฟอร์มที่ tab "ขอเบิกของ" → กด ส่ง Request<br>
+        2. ระบบส่ง notification ไปยัง Teams + Email ของคุณทันที<br>
+        3. คุณเห็น Request ใน "คิว Request" → กด "ตัด Stock" เพื่อ Issue<br>
+        4. สถานะ Request จะอัปเดตอัตโนมัติ
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+<div id="toast"></div>
+
+<!-- MODAL (confirm / prompt) -->
+<div id="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center;display:none">
+  <div id="modal-box" style="background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);padding:20px;width:340px;max-width:90vw;box-shadow:0 10px 40px rgba(0,0,0,.4)">
+    <div id="modal-title" style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px"></div>
+    <div id="modal-message" style="font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-wrap"></div>
+    <div id="modal-input-wrap" style="margin-top:10px;display:none">
+      <input id="modal-input" type="text" style="width:100%">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px">
+      <button id="modal-cancel" class="btn btn-secondary">ยกเลิก</button>
+      <button id="modal-ok" class="btn btn-primary">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const S={
+  balance: {"ne0010011|bns1-bkkho": {"code": "NE0010011", "name": "METER MITSUBISHI MX2-C41E SET CT 600/5", "qty": 2, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 6400.0, "opening": 2, "in": 0, "out": 0}, "ne0010012|bns1-bkkho": {"code": "NE0010012", "name": "METER MITSUBISHI MX2-C41E SET CT 800/5", "qty": 1, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 6400.0, "opening": 1, "in": 0, "out": 0}, "ne0010003|bns1-bkkho": {"code": "NE0010003", "name": "METER LUMEL ND25", "qty": 1, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 15600.0, "opening": 1, "in": 0, "out": 0}, "ne0030002|bns1-bkkho": {"code": "NE0030002", "name": "IOT GATEWAY DELL EDGE GATEWAY 3001", "qty": 1, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 21500.0, "opening": 1, "in": 0, "out": 0}, "ne0030003|bns1-bkkho": {"code": "NE0030003", "name": "DATA CONCENTRATOR FOR MITSUBISHI METER (ADC BOX )", "qty": 4, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 12000.0, "opening": 4, "in": 0, "out": 0}, "ne0030001|bns1-bkkho": {"code": "NE0030001", "name": "IOT GATEWAY ADVANTECH ARK-1124", "qty": 13, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 18426.0, "opening": 13, "in": 0, "out": 0}, "ne00410001|bns1-bkkho": {"code": "NE00410001", "name": "ROUTER, RELIX, 4G NO WIFI", "qty": 2, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 8800.0, "opening": 2, "in": 0, "out": 0}, "ne00410002|bns1-bkkho": {"code": "NE00410002", "name": "ROUTER, RELIX, 4G WIFI", "qty": 1, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 8800.0, "opening": 1, "in": 0, "out": 0}, "ne00410004|bns1-bkkho": {"code": "NE00410004", "name": "ROUTER ORXCEL O40M + WIFI", "qty": 9, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 9000.0, "opening": 9, "in": 0, "out": 0}, "ne0050001|bns1-bkkho": {"code": "NE0050001", "name": "CONVERTER LINK SFP/LC 1.25G 1310 NM", "qty": 10, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 650.0, "opening": 10, "in": 0, "out": 0}, "ne0050002|bns1-bkkho": {"code": "NE0050002", "name": "CONVERTER MOXA NPORT 5150A", "qty": 13, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 4795.66, "opening": 13, "in": 0, "out": 0}, "ne0050003|bns1-bkkho": {"code": "NE0050003", "name": "CONVERTER ZYXEL SFP-LX-10-D 100LX", "qty": 1, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 1590.0, "opening": 1, "in": 0, "out": 0}, "ne00510001|bns1-bkkho": {"code": "NE00510001", "name": "CONNECTOR CONVERTER MOXA MINI DB9F TO TB", "qty": 9, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 340.0, "opening": 9, "in": 0, "out": 0}, "ne0060001|bns1-bkkho": {"code": "NE0060001", "name": "POWER SUPPLY MEANWELL AD-55A", "qty": 3, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 1037.38, "opening": 3, "in": 0, "out": 0}, "ne0060002|bns1-bkkho": {"code": "NE0060002", "name": "POWER SUPPLY MEANWELL LRS-100-24", "qty": 19, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 453.27, "opening": 19, "in": 0, "out": 0}, "ne00710001|bns1-bkkho": {"code": "NE00710001", "name": "UPS APC BACK-UPS 950VA/520W", "qty": 1, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 4500.0, "opening": 1, "in": 0, "out": 0}, "ne0090002|bns1-bkkho": {"code": "NE0090002", "name": "SWITCH HUB ZYXEL GS1920-8HPV2", "qty": 5, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 9814.29, "opening": 5, "in": 0, "out": 0}, "ne00910001|bns1-bkkho": {"code": "NE00910001", "name": "SWITCH HUB ADVANTECH EKI-2525PA-AE", "qty": 1, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 10076.0, "opening": 1, "in": 0, "out": 0}, "ne0100001|bns1-bkkho": {"code": "NE0100001", "name": "BATTERY LION 12V 7AH", "qty": 3, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 457.01, "opening": 3, "in": 0, "out": 0}, "ne01410002|bns1-bkkho": {"code": "NE01410002", "name": "NE01410002 - NH FUSE EATON 400NHG2B", "qty": 3, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 670.0, "opening": 3, "in": 0, "out": 0}, "ne01710001|bns1-bkkho": {"code": "NE01710001", "name": "NE01710001 - PROTECTION RELAY SCHNEIDER MICOM P127", "qty": 1, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 70452.0, "opening": 1, "in": 0, "out": 0}, "ne01610003|bns1-bkkho": {"code": "NE01610003", "name": "NE01610003 - CURRENT TRANSFORMER ALCE 300-600\\/5-5", "qty": 2, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 47500.0, "opening": 2, "in": 0, "out": 0}, "ne01610004|bns1-bkkho": {"code": "NE01610004", "name": "NE01610004 - CURRENT TRANSFORMER ALCE 400\\/5-5A", "qty": 1, "unit": "UNI", "store": "BNS1-BKKHO", "category": "Non-Critical", "avg_cost": 45900.0, "opening": 1, "in": 0, "out": 0}, "se0010001|bns1-timco": {"code": "SE0010001", "name": "PV PANEL JINKO JKM340M-72-BF", "qty": 40, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 4459.97, "opening": 40, "in": 0, "out": 0}, "se0010002|bns1-timco": {"code": "SE0010002", "name": "PV PANEL JINKO JKM340M-72-WF", "qty": 183, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 4521.91, "opening": 183, "in": 0, "out": 0}, "se0010005|bns1-timco": {"code": "SE0010005", "name": "PV PANEL JINKO JKM430M-78H-V", "qty": 13, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 3387.8, "opening": 13, "in": 0, "out": 0}, "se0010006|bns1-timco": {"code": "SE0010006", "name": "PV PANEL JINKO JKM465M-7RL3-V", "qty": 35, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 4549.08, "opening": 35, "in": 0, "out": 0}, "se0010009|bns1-timco": {"code": "SE0010009", "name": "PV PANEL TRINA TSM-320PD14", "qty": 18, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 4799.78, "opening": 18, "in": 0, "out": 0}, "se0010010|bns1-timco": {"code": "SE0010010", "name": "PV PANEL TRINA TSM-450DE17M", "qty": 31, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 3217.07, "opening": 31, "in": 0, "out": 0}, "se0010011|bns1-timco": {"code": "SE0010011", "name": "PV PANEL LONGGI LR4-72HPH-450M", "qty": 18, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 2965.03, "opening": 18, "in": 0, "out": 0}, "se0010013|bns1-timco": {"code": "SE0010013", "name": "PV PANEL SUNPOWER SPR-P19-395-COM", "qty": 5, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 4161.72, "opening": 5, "in": 0, "out": 0}, "se00110004|bns1-timco": {"code": "SE00110004", "name": "PV PANEL JA SOLAR JAM72S09-390/PR", "qty": 5, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 4670.0, "opening": 5, "in": 0, "out": 0}, "se00110005|bns1-timco": {"code": "SE00110005", "name": "PV PANEL JINKO JKM540M-72HL4-V", "qty": 9, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 5294.81, "opening": 9, "in": 0, "out": 0}, "se00110006|bns1-timco": {"code": "SE00110006", "name": "PV PANEL JINKO JKM560N-72HL4-V", "qty": 3, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 5967.0, "opening": 3, "in": 0, "out": 0}, "se00110007|bns1-timco": {"code": "SE00110007", "name": "PV PANEL JINKO JKM620N-78HL4-V", "qty": 7, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 5357.0, "opening": 7, "in": 0, "out": 0}, "se00110009|bns1-timco": {"code": "SE00110009", "name": "PV PANEL TRINA TSM-605DE20", "qty": 11, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 0, "opening": 11, "in": 0, "out": 0}, "se00110012|bns1-timco": {"code": "SE00110012", "name": "PV PANEL TRINA TSM575-DE-19R", "qty": 483, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 2891.67, "opening": 483, "in": 0, "out": 0}, "se00110011|bns1-timco": {"code": "SE00110011", "name": "PV PANEL TRINA TSM-DE21 665W", "qty": 2440, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 3875.19, "opening": 2440, "in": 0, "out": 0}, "se00110014|bns1-timco": {"code": "SE00110014", "name": "PV PANEL JINKO JKM625N-78HL4-V", "qty": 11, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 3529.06, "opening": 11, "in": 0, "out": 0}, "se00110015|bns1-timco": {"code": "SE00110015", "name": "PV PANEL TRINA TSM-590NEG19RC.20", "qty": 20, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 2545.85, "opening": 20, "in": 0, "out": 0}, "se00110016|bns1-timco": {"code": "SE00110016", "name": "PV PANEL TRINA TSM-NEG21.20-705W", "qty": 125, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 2379.38, "opening": 125, "in": 0, "out": 0}, "se00110018|bns1-timco": {"code": "SE00110018", "name": "PV PANEL ASTRONERGY CHSM66RN(DG)/F-BH 615W", "qty": 4, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 1869.99, "opening": 4, "in": 0, "out": 0}, "se00110017|bns1-timco": {"code": "SE00110017", "name": "PV PANEL ASTRONERGY CHSM66N(DG)\\/F-BH 700W", "qty": 24, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 2220.19, "opening": 24, "in": 0, "out": 0}, "se00110021|bns1-timco": {"code": "SE00110021", "name": "PV PANEL TRINA TSM-NEG21C.20 715W", "qty": 1913, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 2288.0, "opening": 1913, "in": 0, "out": 0}, "se00110021|bnext-timco": {"code": "SE00110021", "name": "PV PANEL TRINA TSM-NEG21C.20 715W", "qty": 5, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Critical", "avg_cost": 2288.0, "opening": 5, "in": 0, "out": 0}, "se00110022|bns1-timco": {"code": "SE00110022", "name": "PV PANEL TRINA NEG21C.20 725W", "qty": 16632, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 3259.95, "opening": 16632, "in": 0, "out": 0}, "se00110023|bns1-timco": {"code": "SE00110023", "name": "PV PANEL TRINA NEG21C.20 730W", "qty": 11286, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 2737.4, "opening": 11286, "in": 0, "out": 0}, "se0020004|bns1-timco": {"code": "SE0020004", "name": "INVERTER HUAWEI SUN2000-36KTL-PLC", "qty": 9, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 85666.66, "opening": 9, "in": 0, "out": 0}, "se0020005|bns1-timco": {"code": "SE0020005", "name": "INVERTER HUAWEI SUN2000-60KTL-M0", "qty": 6, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 132977.5, "opening": 6, "in": 0, "out": 0}, "se00210006|bns1-timco": {"code": "SE00210006", "name": "INVERTER HUAWEI SUN2000-100KTL-M2", "qty": 1, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 171258.0, "opening": 1, "in": 0, "out": 0}, "se00110019|bns1-timco": {"code": "SE00110019", "name": "PV PANEL ASTRONERGY CHSM66N(DG)\\/F-BH 590W", "qty": 64, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 0, "opening": 64, "in": 0, "out": 0}, "se00110020|bns1-timco": {"code": "SE00110020", "name": "PV PANEL URE FBL-B8W-540W", "qty": 31, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 1900.0, "opening": 31, "in": 0, "out": 0}, "ne01310010|bns1-timco": {"code": "NE01310010", "name": "MCCB LT 3P 200A (36kA 800V)", "qty": 2, "unit": "UNI", "store": "BNS1-TIMCO", "category": "Critical", "avg_cost": 10891.0, "opening": 2, "in": 0, "out": 0}, "ev00110001|bnext-timco": {"code": "EV00110001", "name": "EV CHARGER HUAWEI SC CHARGER 22 kW-S03", "qty": 1, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Non-Critical", "avg_cost": 14250.0, "opening": 1, "in": 0, "out": 0}, "ne00110002|bnext-timco": {"code": "NE00110002", "name": "METER HUAWEI DTSU666-H 250A/50mA", "qty": 5, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Non-Critical", "avg_cost": 3230.0, "opening": 5, "in": 0, "out": 0}, "se00210021|bnext-timco": {"code": "SE00210021", "name": "INVERTER HUAWEI SUN2000-20K-MB0", "qty": 1, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Critical", "avg_cost": 58600.0, "opening": 1, "in": 0, "out": 0}, "se00410006|bnext-timco": {"code": "SE00410006", "name": "BATTERY HUAWEI POWER MODULE LUNA2000-10KW-C1", "qty": 5, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Non-Critical", "avg_cost": 30256.15, "opening": 5, "in": 0, "out": 0}, "ne00210004|bnext-timco": {"code": "NE00210004", "name": "DATA LOGGER HUAWEI SMARTGUARD-63A-T0", "qty": 5, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Critical", "avg_cost": 25293.33, "opening": 5, "in": 0, "out": 0}, "se00210002|bnext-timco": {"code": "SE00210002", "name": "INVERTER HUAWEI SUN2000-10KTL-M1", "qty": 5, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Critical", "avg_cost": 35800.0, "opening": 5, "in": 0, "out": 0}, "se0010002|bnext-timco": {"code": "SE0010002", "name": "PV PANEL JINKO JKM340M-72-WF", "qty": 14, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Critical", "avg_cost": 4521.91, "opening": 14, "in": 0, "out": 0}, "se00110019|bnext-timco": {"code": "SE00110019", "name": "PV PANEL ASTRONERGY CHSM66N(DG)/F-BH 590W", "qty": 16, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Critical", "avg_cost": 1914.08, "opening": 16, "in": 0, "out": 0}, "ne00110003|bnext-timco": {"code": "NE00110003", "name": "METER ALPHA DTSU666 5(80)A", "qty": 1, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Non-Critical", "avg_cost": 26189.44, "opening": 1, "in": 0, "out": 0}, "se00210016|bnext-timco": {"code": "SE00210016", "name": "INVERTER ALPHA SMILE-G3-S5-INV", "qty": 1, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Non-Critical", "avg_cost": 303779.74, "opening": 1, "in": 0, "out": 0}, "se00410007|bnext-timco": {"code": "SE00410007", "name": "BATTERY ALPHA 10.1KWH LFP battery module/IP65", "qty": 1, "unit": "UNI", "store": "BNEXT-TIMCO", "category": "Critical", "avg_cost": 475176.59, "opening": 1, "in": 0, "out": 0}},
+  grLog:[],txnLog:[],woLog:[],masterLog:[],ctr:1000
+};
+
+// Add in/out/opening fields if missing
+Object.values(S.balance).forEach(b => {
+  if(!b.opening) b.opening = b.qty;
+  if(!b.in) b.in = 0;
+  if(!b.out) b.out = 0;
+});
+
+// snapshot of keys that existed at app load (opening balance only) — used to separate GR-created items
+const OPENING_KEYS = new Set(Object.keys(S.balance));
+
+const $ = id => document.getElementById(id);
+function nid(p){return p+'-'+(++S.ctr);}
+function today(){return new Date().toISOString().slice(0,10);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function toast(m,d=2400){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
+function confirm(id){$(id).style.display='inline';setTimeout(()=>$(id).style.display='none',2200);}
+
+// ── MODAL (replaces window.confirm / window.prompt — blocked in sandboxed iframe) ──
+function showModal({title='ยืนยันการทำรายการ', message='', showInput=false, inputValue='', okText='ยืนยัน', danger=false}={}){
+  return new Promise(resolve=>{
+    const overlay=$('modal-overlay');
+    $('modal-title').textContent=title;
+    $('modal-message').textContent=message;
+    const inputWrap=$('modal-input-wrap'), input=$('modal-input');
+    inputWrap.style.display=showInput?'block':'none';
+    input.value=inputValue;
+    const okBtn=$('modal-ok'), cancelBtn=$('modal-cancel');
+    okBtn.textContent=okText;
+    okBtn.className='btn '+(danger?'btn-primary':'btn-primary');
+    okBtn.style.background=danger?'var(--coral2,#d65f5f)':'';
+    overlay.style.display='flex';
+    if(showInput) setTimeout(()=>input.focus(),50);
+    function cleanup(){
+      overlay.style.display='none';
+      okBtn.removeEventListener('click',onOk);
+      cancelBtn.removeEventListener('click',onCancel);
+      overlay.removeEventListener('click',onOverlay);
+      input.removeEventListener('keydown',onKey);
+    }
+    function onOk(){ cleanup(); resolve(showInput?input.value:true); }
+    function onCancel(){ cleanup(); resolve(showInput?null:false); }
+    function onOverlay(e){ if(e.target===overlay) onCancel(); }
+    function onKey(e){ if(e.key==='Enter') onOk(); if(e.key==='Escape') onCancel(); }
+    okBtn.addEventListener('click',onOk);
+    cancelBtn.addEventListener('click',onCancel);
+    overlay.addEventListener('click',onOverlay);
+    input.addEventListener('keydown',onKey);
+  });
+}
+function modalConfirm(message,title='ยืนยันการทำรายการ',danger=false){
+  return showModal({title,message,showInput:false,danger,okText:danger?'ลบ':'ยืนยัน'});
+}
+function modalPrompt(message,defaultVal='',title='แก้ไขข้อมูล'){
+  return showModal({title,message,showInput:true,inputValue:defaultVal,okText:'บันทึก'});
+}
+
+// CLOCK
+function updateClock(){$('clock').textContent=new Date().toLocaleString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+setInterval(updateClock,1000);updateClock();
+
+// TAB
+function switchTab(id){
+  const ALL_TABS=['gr','issue','writeoff','report','dashboard','request','config'];
+  const tabEls=document.querySelectorAll('.tab');
+  ALL_TABS.forEach((t,i)=>{
+    if(tabEls[i]) tabEls[i].classList.toggle('active',t===id);
+    const pg=$('page-'+t);
+    if(pg) pg.classList.toggle('active',t===id);
+  });
+  if(id==='report'){updateStats();renderReport();}
+  if(id==='issue'||id==='writeoff') populateItemSelects();
+  if(id==='dashboard') renderDashboard();
+  if(id==='request'){ populateReqDatalist(); renderReqQueue(); renderReqHistory(); }
+  if(id==='config') loadConfig();
+}
+
+// ── DASHBOARD ──
+const DASH_COLORS = ['#2dd4a8','#5b8dee','#f5a623','#f87171','#a78bfa','#4ade80','#e879f9','#60a5fa'];
+function fmtNum(n){return Math.round(n).toLocaleString('en-US');}
+function fmtK(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(1)+'K'; return fmtNum(n); }
+
+function donutSVG(svgEl, segments){
+  const total = segments.reduce((s,x)=>s+x.value,0)||1;
+  const r=40, cx=55, cy=55, circ=2*Math.PI*r;
+  let offset=0, circles='';
+  segments.forEach(seg=>{
+    const len=(seg.value/total)*circ;
+    circles+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="14"
+      stroke-dasharray="${len} ${circ-len}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})" stroke-linecap="round"/>`;
+    offset+=len;
+  });
+  svgEl.innerHTML = circles +
+    `<circle cx="${cx}" cy="${cy}" r="${r-16}" fill="var(--card)"/>
+     <text x="${cx}" y="${cy-3}" text-anchor="middle" fill="var(--text)" font-size="11" font-weight="700" font-family="DM Sans">${fmtK(total>1e4?total:0)||''}</text>
+     <text x="${cx}" y="${cy+11}" text-anchor="middle" fill="var(--text3)" font-size="8.5" font-family="DM Sans">${segments.length} กลุ่ม</text>`;
+}
+
+function legendHTML(segs, total){
+  return segs.map(s=>`
+    <div style="display:flex;align-items:center;gap:6px;font-size:10.5px">
+      <span style="width:8px;height:8px;border-radius:2px;background:${s.color};flex-shrink:0"></span>
+      <span style="flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.label)}</span>
+      <span style="color:var(--text3);flex-shrink:0">${(s.value/total*100).toFixed(0)}%</span>
+    </div>`).join('');
+}
+
+function renderDashboard(){
+  // filter
+  const filterStore = ($('dash-filter-store')||{value:''}).value;
+  let allItems = Object.values(S.balance);
+
+  // populate storeroom filter options
+  const storeFilter=$('dash-filter-store');
+  if(storeFilter){
+    const stores=[...new Set(allItems.map(b=>b.store))].sort();
+    const cur=storeFilter.value;
+    storeFilter.innerHTML='<option value="">📦 ทุก Storeroom</option>'+stores.map(s=>`<option value="${esc(s)}"${s===cur?' selected':''}>${esc(s)}</option>`).join('');
+  }
+
+  const items = filterStore ? allItems.filter(b=>b.store===filterStore) : allItems;
+
+  const totalSKUs   = items.length;
+  const totalQty    = items.reduce((s,b)=>s+(b.qty||0),0);
+  const totalValue  = items.reduce((s,b)=>s+(b.qty||0)*(b.avg_cost||0),0);
+  const totalIn     = S.grLog ? S.grLog.length : 0;
+  const lowItems    = items.filter(b=>(b.qty||0)>0 && (b.qty||0)<=2);
+  const zeroItems   = items.filter(b=>(b.qty||0)===0);
+
+  // KPIs
+  $('d-skus').textContent  = fmtNum(totalSKUs);
+  $('d-qty').textContent   = fmtNum(totalQty);
+  $('d-value').textContent = '฿'+fmtK(totalValue);
+  $('d-in').textContent    = fmtNum(totalIn);
+  $('d-low').textContent   = fmtNum(lowItems.length);
+  $('d-zero').textContent  = fmtNum(zeroItems.length);
+
+  // ① Donut: value by storeroom
+  const byStore={};
+  items.forEach(b=>{ byStore[b.store]=(byStore[b.store]||0)+(b.qty||0)*(b.avg_cost||0); });
+  const storeSegs=Object.entries(byStore).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>({label:k,value:v,color:DASH_COLORS[i%DASH_COLORS.length]}));
+  const donutStore=$('d-donut-store');
+  if(donutStore && storeSegs.length) donutSVG(donutStore, storeSegs);
+  const legStore=$('d-legend-store');
+  if(legStore) legStore.innerHTML=legendHTML(storeSegs, totalValue||1);
+
+  // ② Donut: value by category
+  const byCat={};
+  items.forEach(b=>{ const c=b.category||'ทั่วไป'; byCat[c]=(byCat[c]||0)+(b.qty||0)*(b.avg_cost||0); });
+  const catSegs=Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>({label:k,value:v,color:DASH_COLORS[(i+3)%DASH_COLORS.length]}));
+  const donutCat=$('d-donut-cat');
+  if(donutCat && catSegs.length) donutSVG(donutCat, catSegs);
+  const legCat=$('d-legend-cat');
+  if(legCat) legCat.innerHTML=legendHTML(catSegs, totalValue||1);
+
+  // ③ Monthly bar chart (in vs out from master log)
+  const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const inByM={}, outByM={};
+  (S.grLog||[]).forEach(r=>{ const m=new Date(r.date).getMonth(); inByM[m]=(inByM[m]||0)+1; });
+  (S.txnLog||[]).forEach(r=>{ const m=new Date(r.date).getMonth(); outByM[m]=(outByM[m]||0)+1; });
+  const activeMonths=[...new Set([...Object.keys(inByM),...Object.keys(outByM)])].map(Number).sort((a,b)=>a-b);
+  const showMonths = activeMonths.length ? activeMonths.slice(-6) : [0,1,2,3,4,5];
+  const maxBar = Math.max(...showMonths.map(m=>Math.max(inByM[m]||0,outByM[m]||0)),1);
+  const chartH=80;
+  const monthChart=$('d-monthly-chart');
+  if(monthChart){
+    monthChart.innerHTML = showMonths.map(m=>{
+      const inH=Math.round(((inByM[m]||0)/maxBar)*chartH);
+      const outH=Math.round(((outByM[m]||0)/maxBar)*chartH);
+      return`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:28px">
+        <div style="display:flex;align-items:flex-end;gap:2px;height:${chartH}px">
+          <div title="รับเข้า ${inByM[m]||0}" style="width:10px;height:${inH||2}px;background:var(--teal);border-radius:2px 2px 0 0;transition:height .4s"></div>
+          <div title="เบิกออก ${outByM[m]||0}" style="width:10px;height:${outH||2}px;background:var(--amber);border-radius:2px 2px 0 0;transition:height .4s"></div>
+        </div>
+        <div style="font-size:9px;color:var(--text3)">${months[m]}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ④ Top 10 issued items
+  const issuedQty={};
+  (S.txnLog||[]).forEach(r=>{ issuedQty[r.code]=(issuedQty[r.code]||{name:r.item,qty:0,unit:r.unit}); issuedQty[r.code].qty+=r.qty; });
+  const top10Issue=Object.values(issuedQty).sort((a,b)=>b.qty-a.qty).slice(0,10);
+  const maxIssue=Math.max(...top10Issue.map(x=>x.qty),1);
+  const topIssueEl=$('d-top-issue');
+  if(topIssueEl){
+    if(!top10Issue.length){
+      topIssueEl.innerHTML=`<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">ยังไม่มีประวัติการเบิก</div>`;
+    } else {
+      topIssueEl.innerHTML=top10Issue.map((x,i)=>`
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:16px;height:16px;background:var(--bg3);border-radius:4px;font-size:9px;font-weight:700;color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
+          <div style="flex:1;overflow:hidden">
+            <div style="font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.name)}</div>
+            <div style="height:5px;background:var(--bg3);border-radius:3px;margin-top:3px;overflow:hidden"><div style="height:100%;width:${(x.qty/maxIssue*100).toFixed(0)}%;background:var(--teal);border-radius:3px"></div></div>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--teal);flex-shrink:0">${fmtNum(x.qty)}</span>
+        </div>`).join('');
+    }
+  }
+
+  // ⑤ Low / zero stock table
+  const lowTbody=$('d-low-table');
+  if(lowTbody){
+    const allLow=[...zeroItems.map(b=>({...b,status:'out'})), ...lowItems.map(b=>({...b,status:'low'}))].sort((a,b)=>(a.qty||0)-(b.qty||0));
+    if(!allLow.length){
+      lowTbody.innerHTML=`<tr><td colspan="4" style="color:var(--teal);text-align:center;padding:18px;font-size:12px">✓ ไม่มีรายการใกล้หมด</td></tr>`;
+    } else {
+      lowTbody.innerHTML=allLow.map(b=>{
+        const pill = b.status==='out'
+          ? `<span class="pill-out">หมดสต็อก</span>`
+          : `<span class="pill-low">ใกล้หมด</span>`;
+        return`<tr>
+          <td style="font-size:11px;color:var(--text3)">${esc(b.code)}</td>
+          <td style="font-size:11px">${esc(b.name)}</td>
+          <td style="text-align:right;font-size:11px;font-weight:600;color:${b.status==='out'?'var(--coral)':'var(--amber)'}">${b.qty}</td>
+          <td>${pill}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  // ⑥ Top 10 by value table
+  const top10val=items.map(b=>({...b,value:(b.qty||0)*(b.avg_cost||0)})).sort((a,b)=>b.value-a.value).slice(0,10);
+  const topValEl=$('d-top-value');
+  if(topValEl){
+    topValEl.innerHTML=top10val.map(b=>`
+      <tr>
+        <td style="font-size:11px;color:var(--text3)">${esc(b.code)}</td>
+        <td style="font-size:11px">${esc(b.name)}</td>
+        <td><span class="badge badge-blue" style="font-size:10px">${esc(b.store)}</span></td>
+        <td style="text-align:right;font-size:11px">${fmtNum(b.qty)}</td>
+        <td style="font-size:11px;color:var(--text3)">${esc(b.unit)}</td>
+        <td style="text-align:right;font-size:11px;color:var(--text3)">฿${fmtNum(b.avg_cost)}</td>
+        <td style="text-align:right;font-weight:700;color:var(--amber)">฿${fmtNum(b.value)}</td>
+      </tr>`).join('');
+  }
+
+  // render interactive stock balance
+  SB.page=1; SB.highlight=null;
+  renderStockBalance();
+}
+
+
+function exportDashboardSnapshot(){
+  renderDashboard();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  const timeStr = now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+  const filterLabel = ($('dash-filter-store')||{value:''}).value || 'ทุก Storeroom';
+  const filename = 'storeroom-dashboard-' + now.toISOString().slice(0,10) + '.html';
+
+  // embed data as base64 to avoid any HTML/JS escaping issues
+  const dataJson = JSON.stringify({
+    balance: S.balance,
+    txnLog:  S.txnLog  || [],
+    grLog:   S.grLog   || [],
+    woLog:   S.woLog   || [],
+    exportedAt: now.toISOString()
+  });
+  const dataB64 = btoa(unescape(encodeURIComponent(dataJson)));
+
+  // grab CSS
+  const rootStyles = [...document.styleSheets]
+    .flatMap(s=>{ try{ return [...s.cssRules]; } catch(e){ return []; } })
+    .map(r=>r.cssText).join('\n');
+
+  const ST = '<'+'script>';
+  const ET = '<'+'/script>';
+
+  const html = [
+    '<!DOCTYPE html>',
+    '<html lang="th"><head>',
+    '<meta charset="UTF-8">',
+    '<meta name="viewport" content="width=device-width,initial-scale=1">',
+    '<title>Stock Dashboard — ' + dateStr + '</title>',
+    '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">',
+    '<style>',
+    ':root{--bg:#0f1117;--bg2:#181c27;--bg3:#1e2336;--card:#232840;--border:#2e3450;--border2:#3a4060;',
+    '--text:#e8eaf6;--text2:#9aa0c0;--text3:#5c6380;--teal:#2dd4a8;--teal2:#1a9e7d;--teal-bg:#0d2e25;',
+    '--blue:#5b8dee;--blue2:#3a6fd8;--blue-bg:#0d1a35;--amber:#f5a623;--amber2:#c97e0a;--amber-bg:#2a1e08;',
+    '--green:#4ade80;--green-bg:#0d2a1a;--coral:#f87171;--coral-bg:#2a1010;--purple:#a78bfa;--purple-bg:#1a1235;',
+    '--radius:8px;--radius-sm:5px;}',
+    '*{box-sizing:border-box;margin:0;padding:0}',
+    'html,body{background:var(--bg);color:var(--text);font-family:"DM Sans",system-ui,sans-serif;font-size:13px;min-height:100vh}',
+    '.snap-banner{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:100}',
+    '.snap-title{font-size:15px;font-weight:700;color:var(--text)}',
+    '.snap-meta{font-size:11px;color:var(--text3);margin-top:2px}',
+    '.snap-badge{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue2);border-radius:4px;padding:3px 9px;font-size:10px;font-weight:600}',
+    '.wrap{padding:20px 24px;max-width:1400px;margin:0 auto}',
+    rootStyles,
+    '</style></head><body>',
+    '<div class="snap-banner">',
+    '  <div>',
+    '    <div class="snap-title">📊 Stock Dashboard — คลังสินค้า Banpu NEXT</div>',
+    '    <div class="snap-meta">ข้อมูล ณ วันที่ ' + dateStr + ' เวลา ' + timeStr + ' · คลัง: ' + esc(filterLabel) + '</div>',
+    '  </div>',
+    '  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">',
+    '    <select id="snap-filter-store" style="padding:5px 8px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text)">',
+    '      <option value="">📦 ทุก Storeroom</option>',
+    '    </select>',
+    '    <span class="snap-badge">📸 Snapshot ' + dateStr + '</span>',
+    '  </div>',
+    '</div>',
+    '<div class="wrap" id="snap-wrap">',
+    '  <div id="snap-kpi" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px"></div>',
+    '  <div class="card" style="padding:16px;margin-bottom:12px">',
+    '    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">',
+    '      <div class="card-title" style="margin:0">① Stock Balance — Interactive</div>',
+    '      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">',
+    '        <input id="snap-search" type="text" placeholder="🔍 ค้นหา item / MAT code..." style="padding:5px 10px;font-size:11px;min-width:200px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text)">',
+    '        <select id="snap-sb-store" style="padding:5px 8px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text)"><option value="">ทุก Storeroom</option></select>',
+    '        <select id="snap-sb-status" style="padding:5px 8px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text)"><option value="">ทุกสถานะ</option><option value="ok">ปกติ</option><option value="low">ใกล้หมด</option><option value="zero">หมดสต็อก</option></select>',
+    '        <select id="snap-sb-sort" style="padding:5px 8px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text)"><option value="value-desc">มูลค่า ↓</option><option value="value-asc">มูลค่า ↑</option><option value="qty-desc">Qty ↓</option><option value="qty-asc">Qty ↑</option><option value="name-asc">ชื่อ A→Z</option></select>',
+    '        <span id="snap-count" style="font-size:10px;color:var(--text3)"></span>',
+    '      </div>',
+    '    </div>',
+    '    <div style="overflow-x:auto">',
+    '      <table class="tbl" style="width:100%"><thead><tr>',
+    '        <th style="cursor:pointer" onclick="snapSort(\'name\')">ชื่อ <span id="sth-name"></span></th>',
+    '        <th style="cursor:pointer" onclick="snapSort(\'code\')">MAT Code <span id="sth-code"></span></th>',
+    '        <th style="cursor:pointer" onclick="snapSort(\'store\')">Storeroom <span id="sth-store"></span></th>',
+    '        <th style="cursor:pointer;text-align:right" onclick="snapSort(\'qty\')">Qty <span id="sth-qty"></span></th>',
+    '        <th style="text-align:right">Unit</th>',
+    '        <th style="cursor:pointer;text-align:right" onclick="snapSort(\'avg_cost\')">Avg Cost <span id="sth-avg_cost"></span></th>',
+    '        <th style="cursor:pointer;text-align:right" onclick="snapSort(\'value\')">มูลค่า <span id="sth-value"></span></th>',
+    '        <th style="text-align:center">สถานะ</th>',
+    '      </tr></thead><tbody id="snap-sb-tbody"></tbody></table>',
+    '    </div>',
+    '    <div id="snap-pg" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px"></div>',
+    '  </div>',
+    '  <div style="display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:12px;margin-bottom:12px">',
+    '    <div class="card" style="padding:16px"><div class="card-title">② มูลค่าสต็อกตามคลัง</div>',
+    '      <div style="display:flex;align-items:center;gap:14px">',
+    '        <svg id="snap-donut-store" width="110" height="110" viewBox="0 0 110 110" style="flex-shrink:0"></svg>',
+    '        <div id="snap-legend-store" style="flex:1;display:flex;flex-direction:column;gap:6px"></div>',
+    '      </div></div>',
+    '    <div class="card" style="padding:16px"><div class="card-title">③ มูลค่าตามหมวดหมู่</div>',
+    '      <div style="display:flex;align-items:center;gap:14px">',
+    '        <svg id="snap-donut-cat" width="110" height="110" viewBox="0 0 110 110" style="flex-shrink:0"></svg>',
+    '        <div id="snap-legend-cat" style="flex:1;display:flex;flex-direction:column;gap:6px"></div>',
+    '      </div></div>',
+    '    <div class="card" style="padding:16px"><div class="card-title">④ Top สินค้าที่เบิกมากสุด</div>',
+    '      <div id="snap-top-issue" style="display:flex;flex-direction:column;gap:7px"></div>',
+    '    </div>',
+    '  </div>',
+    '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">',
+    '    <div class="card" style="padding:16px"><div class="card-title">⑤ สินค้าใกล้หมด / หมดสต็อก</div>',
+    '      <table class="tbl"><thead><tr><th>รหัส</th><th>ชื่อ</th><th style="text-align:right">คงเหลือ</th><th>สถานะ</th></tr></thead>',
+    '      <tbody id="snap-low"></tbody></table></div>',
+    '    <div class="card" style="padding:16px"><div class="card-title">⑥ Top 10 มูลค่าสต็อกสูงสุด</div>',
+    '      <table class="tbl"><thead><tr><th>ชื่อ</th><th>คลัง</th><th style="text-align:right">Qty</th><th style="text-align:right">มูลค่า</th></tr></thead>',
+    '      <tbody id="snap-topval"></tbody></table></div>',
+    '  </div>',
+    '</div>',
+    ST,
+    'const _d=atob("' + '" + dataB64 + "' + '");',
+    'const SD=JSON.parse(decodeURIComponent(escape(_d)));',
+    'const COLORS=["#2dd4a8","#5b8dee","#f5a623","#f87171","#a78bfa","#4ade80","#e879f9","#60a5fa"];',
+    'let snapSortState="value-desc",snapPage=1;const PER_PAGE=20;',
+    'function $(i){return document.getElementById(i);}',
+    'function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;}',
+    'function fmt(n){return Math.round(n).toLocaleString("en-US");}',
+    'function fmtK(n){if(n>=1e6)return(n/1e6).toFixed(1)+"M";if(n>=1e3)return(n/1e3).toFixed(1)+"K";return fmt(n);}',
+    'function getItems(sf){return Object.values(SD.balance).filter(b=>!sf||b.store===sf).map(b=>({...b,value:(b.qty||0)*(b.avg_cost||0),status:(b.qty||0)===0?"zero":(b.qty||0)<=2?"low":"ok"}));}',
+    'function pill(s){return s==="zero"?"<span style=\\"background:var(--coral-bg);color:var(--coral);border:1px solid #3a1515;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600\\">หมด</span>":s==="low"?"<span style=\\"background:var(--amber-bg);color:var(--amber);border:1px solid #3a2508;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600\\">ใกล้หมด</span>":"<span style=\\"background:var(--teal-bg);color:var(--teal);border:1px solid #0d3028;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600\\">ปกติ</span>";}',
+    'function donut(el,segs){const total=segs.reduce((s,x)=>s+x.value,0)||1,r=40,cx=55,cy=55,c=2*Math.PI*r;let off=0,h="";segs.forEach(sg=>{const l=(sg.value/total)*c;h+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${sg.color}" stroke-width="14" stroke-dasharray="${l} ${c-l}" stroke-dashoffset="${-off}" transform="rotate(-90 ${cx} ${cy})" stroke-linecap="round"/>`;off+=l;});el.innerHTML=h+`<circle cx="${cx}" cy="${cy}" r="${r-16}" fill="var(--card)"/><text x="${cx}" y="${cy+4}" text-anchor="middle" fill="var(--text)" font-size="10" font-weight="700">${segs.length} กลุ่ม</text>`;}',
+    'function leg(segs,total){return segs.map(s=>`<div style="display:flex;align-items:center;gap:6px;font-size:10.5px"><span style="width:8px;height:8px;border-radius:2px;background:${s.color};flex-shrink:0"></span><span style="flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.label)}</span><span style="color:var(--text3)">${(s.value/total*100).toFixed(0)}%</span></div>`).join("");}',
+    'function renderAll(){',
+    '  const sf=($("snap-filter-store")||{value:""}).value,items=getItems(sf);',
+    '  const tv=items.reduce((s,b)=>s+b.value,0),tq=items.reduce((s,b)=>s+(b.qty||0),0);',
+    '  const low=items.filter(b=>b.status!=="ok"),zero=items.filter(b=>b.status==="zero");',
+    '  $("snap-kpi").innerHTML=[',
+    '    {icon:"📦",val:fmt(items.length),lbl:"จำนวนรายการ",unit:"รายการ",color:"var(--blue)"},',
+    '    {icon:"🔢",val:fmt(tq),lbl:"คงเหลือทั้งหมด",unit:"ชิ้น",color:"var(--teal)"},',
+    '    {icon:"💰",val:"฿"+fmtK(tv),lbl:"มูลค่ารวม",unit:"บาท",color:"var(--amber)"},',
+    '    {icon:"📥",val:fmt(SD.grLog.length),lbl:"รับเข้าทั้งหมด",unit:"ครั้ง",color:"var(--teal)"},',
+    '    {icon:"⚠️",val:fmt(low.length),lbl:"ใกล้หมด",unit:"รายการ",color:"var(--amber)"},',
+    '    {icon:"🚫",val:fmt(zero.length),lbl:"หมดสต็อก",unit:"รายการ",color:"var(--coral)"},',
+    '  ].map(k=>`<div class="dash-kpi-card" style="border-top:3px solid ${k.color}"><div class="dash-kpi-icon" style="background:var(--bg3);color:${k.color}">${k.icon}</div><div class="dash-kpi-val">${k.val}</div><div class="dash-kpi-lbl">${k.lbl}</div><div class="dash-kpi-unit">${k.unit}</div></div>`).join("");',
+    '  const bs={};items.forEach(b=>{bs[b.store]=(bs[b.store]||0)+b.value;});',
+    '  const bss=Object.entries(bs).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>({label:k,value:v,color:COLORS[i%COLORS.length]}));',
+    '  donut($("snap-donut-store"),bss);$("snap-legend-store").innerHTML=leg(bss,tv||1);',
+    '  const bc={};items.forEach(b=>{const c=b.category||"ทั่วไป";bc[c]=(bc[c]||0)+b.value;});',
+    '  const bcs=Object.entries(bc).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>({label:k,value:v,color:COLORS[(i+3)%COLORS.length]}));',
+    '  donut($("snap-donut-cat"),bcs);$("snap-legend-cat").innerHTML=leg(bcs,tv||1);',
+    '  const iq={};SD.txnLog.forEach(r=>{if(!iq[r.item])iq[r.item]={name:r.item,qty:0};iq[r.item].qty+=r.qty;});',
+    '  const ti=Object.values(iq).sort((a,b)=>b.qty-a.qty).slice(0,8),mi=Math.max(...ti.map(x=>x.qty),1);',
+    '  $("snap-top-issue").innerHTML=ti.length?ti.map((x,i)=>`<div style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;background:var(--bg3);border-radius:3px;font-size:9px;font-weight:700;color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span><div style="flex:1;overflow:hidden"><div style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.name)}</div><div style="height:4px;background:var(--bg3);border-radius:3px;margin-top:3px"><div style="height:100%;width:${(x.qty/mi*100).toFixed(0)}%;background:var(--teal);border-radius:3px"></div></div></div><span style="font-size:11px;font-weight:600;color:var(--teal);flex-shrink:0">${fmt(x.qty)}</span></div>`).join(""):"<div style=\\"color:var(--text3);font-size:12px;text-align:center;padding:16px\\">ยังไม่มีประวัติเบิก</div>";',
+    '  const al=items.filter(b=>b.status!=="ok").sort((a,b)=>(a.qty||0)-(b.qty||0)).slice(0,15);',
+    '  $("snap-low").innerHTML=al.length?al.map(b=>`<tr><td style="font-size:11px;color:var(--text3)">${esc(b.code||"-")}</td><td style="font-size:11px">${esc(b.name)}</td><td style="text-align:right;font-weight:600;color:${b.status==="zero"?"var(--coral)":"var(--amber)"}">${b.qty}</td><td>${pill(b.status)}</td></tr>`).join(""):"<tr><td colspan=\\"4\\" style=\\"color:var(--teal);text-align:center;padding:16px;font-size:12px\\">✓ ไม่มีรายการใกล้หมด</td></tr>";',
+    '  const t10=items.sort((a,b)=>b.value-a.value).slice(0,10);',
+    '  $("snap-topval").innerHTML=t10.map(b=>`<tr><td style="font-size:11px">${esc(b.name)}</td><td><span class="badge badge-blue" style="font-size:10px">${esc(b.store)}</span></td><td style="text-align:right;font-size:11px">${fmt(b.qty||0)}</td><td style="text-align:right;font-weight:700;color:var(--amber)">฿${fmt(b.value)}</td></tr>`).join("");',
+    '  renderSB();',
+    '}',
+    'function getF(){',
+    '  const s=($("snap-search")||{value:""}).value.toLowerCase(),st=($("snap-sb-store")||{value:""}).value,sx=($("snap-sb-status")||{value:""}).value;',
+    '  let it=getItems(($("snap-filter-store")||{value:""}).value);',
+    '  if(s)it=it.filter(b=>(b.name||"").toLowerCase().includes(s)||(b.code||"").toLowerCase().includes(s)||(b.store||"").toLowerCase().includes(s));',
+    '  if(st)it=it.filter(b=>b.store===st);if(sx)it=it.filter(b=>b.status===sx);',
+    '  const[col,dir]=snapSortState.split("-");',
+    '  return it.sort((a,b2)=>{const av=["name","code","store"].includes(col)?(a[col]||"").toLowerCase():(a[col]||0),bv=["name","code","store"].includes(col)?(b2[col]||"").toLowerCase():(b2[col]||0);return av<bv?(dir==="asc"?-1:1):av>bv?(dir==="asc"?1:-1):0;});',
+    '}',
+    'function snapSort(c){snapSortState=snapSortState===c+"-desc"?c+"-asc":c+"-desc";snapPage=1;renderSB();}',
+    'function renderSB(){',
+    '  const it=getF(),tot=it.length,pg=Math.max(1,Math.ceil(tot/PER_PAGE));',
+    '  snapPage=Math.min(snapPage,pg);',
+    '  const pi=it.slice((snapPage-1)*PER_PAGE,snapPage*PER_PAGE);',
+    '  ["name","code","store","qty","avg_cost","value"].forEach(c=>{const el=$("sth-"+c);if(el){const[cc,dd]=snapSortState.split("-");el.textContent=cc===c?(dd==="desc"?"↓":"↑"):"";} });',
+    '  $("snap-count").textContent=tot+" รายการ";',
+    '  $("snap-sb-tbody").innerHTML=pi.length?pi.map(b=>{',
+    '    const vc=b.value>50000?"var(--amber)":b.value>10000?"var(--teal)":"var(--text2)",qc=b.qty===0?"var(--coral)":b.qty<=2?"var(--amber)":"var(--text)";',
+    '    return `<tr><td>${esc(b.name)}</td><td style="font-size:11px;color:var(--text3)">${esc(b.code||"-")}</td><td><span class="badge badge-blue" style="font-size:10px">${esc(b.store)}</span></td><td style="text-align:right;font-weight:600;color:${qc}">${fmt(b.qty||0)}</td><td style="text-align:right;font-size:11px;color:var(--text3)">${esc(b.unit||"")}</td><td style="text-align:right;font-size:11px;color:var(--text3)">฿${fmt(b.avg_cost||0)}</td><td style="text-align:right;font-weight:700;color:${vc}">฿${fmt(b.value)}</td><td style="text-align:center">${pill(b.status)}</td></tr>`;',
+    '  }).join(""):"<tr><td colspan=\\"8\\" style=\\"text-align:center;color:var(--text3);padding:20px\\">ไม่พบรายการ</td></tr>";',
+    '  const pgEl=$("snap-pg");if(!pgEl)return;if(pg<=1){pgEl.innerHTML="";return;}',
+    '  const bs="padding:3px 8px;font-size:11px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:4px;cursor:pointer",as="padding:3px 8px;font-size:11px;background:var(--teal);color:var(--bg);border:1px solid var(--teal2);border-radius:4px;cursor:pointer;font-weight:600";',
+    '  let h=`<span style="font-size:11px;color:var(--text3)">หน้า ${snapPage}/${pg} (${tot} รายการ)</span>`;',
+    '  h+=`<button onclick="goPage(1)" ${snapPage===1?"disabled":""} style="${bs}">«</button>`;',
+    '  h+=`<button onclick="goPage(${snapPage-1})" ${snapPage===1?"disabled":""} style="${bs}">‹</button>`;',
+    '  for(let p=Math.max(1,snapPage-2);p<=Math.min(pg,snapPage+2);p++)h+=`<button onclick="goPage(${p})" style="${p===snapPage?as:bs}">${p}</button>`;',
+    '  h+=`<button onclick="goPage(${snapPage+1})" ${snapPage===pg?"disabled":""} style="${bs}">›</button>`;',
+    '  h+=`<button onclick="goPage(${pg})" ${snapPage===pg?"disabled":""} style="${bs}">»</button>`;',
+    '  pgEl.innerHTML=h;',
+    '}',
+    'function goPage(p){snapPage=p;renderSB();}',
+    'function initF(){',
+    '  const ss=[...new Set(Object.values(SD.balance).map(b=>b.store))].sort();',
+    '  ["snap-filter-store","snap-sb-store"].forEach(id=>{const el=$(id);if(!el)return;ss.forEach(s=>{const o=document.createElement("option");o.value=s;o.textContent=s;el.appendChild(o);});});',
+    '}',
+    'document.addEventListener("DOMContentLoaded",()=>{',
+    '  initF();renderAll();',
+    '  ["snap-filter-store"].forEach(id=>{const el=$(id);if(el)el.addEventListener("change",()=>{snapPage=1;renderAll();});});',
+    '  ["snap-search","snap-sb-store","snap-sb-status","snap-sb-sort"].forEach(id=>{const el=$(id);if(el){el.addEventListener("input",()=>{snapPage=1;renderSB();});el.addEventListener("change",()=>{snapPage=1;renderSB();});}});',
+    '});',
+    ET,
+    '</body></html>'
+  ].join('\n');
+
+  // replace placeholder with actual base64
+  const finalHtml = html.replace('" + dataB64 + "', dataB64);
+
+  const blob = new Blob([finalHtml], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✓ Export สำเร็จ — ' + filename);
+}
+
+const GR_STORES = ['BNS1-TIMCO','BNS1-BKKHO','BNEXT-TIMCO'];
+const GR_UNITS  = ['UNI','pcs','m','kg','set','roll','box'];
+
+
+function grCellInput(val='', w='100%', type='text', extra=''){
+  return `<input type="${type}" value="${esc(val)}" style="width:${w};padding:5px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;font-family:inherit" ${extra}>`;
+}
+function grCellSelect(opts, selected=''){
+  return `<select style="padding:5px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;font-family:inherit;width:100%">${opts.map(o=>`<option${o===selected?' selected':''}>${o}</option>`).join('')}</select>`;
+}
+
+function addGRRow(data={}){
+  const tbody = $('gr-rows');
+  const tr = document.createElement('tr');
+  tr.style.borderBottom = '1px solid var(--border)';
+  tr.innerHTML = `
+    <td style="padding:5px 6px;width:70px">${grCellInput(data.po_line||'','100%')}</td>
+    <td style="padding:5px 6px;width:110px">${grCellInput(data.item_no||'','100%')}</td>
+    <td style="padding:5px 6px;min-width:200px">${grCellInput(data.description||'','100%')}</td>
+    <td style="padding:5px 6px;width:80px">${grCellInput(data.po_qty||'','100%','number','min="0" style="text-align:right"')}</td>
+    <td style="padding:5px 6px;width:80px">${grCellInput(data.qty||'','100%','number','min="0" style="text-align:right;color:var(--teal);font-weight:600"')}</td>
+    <td style="padding:5px 6px;width:70px">${grCellSelect(GR_UNITS, data.unit||'UNI')}</td>
+    <td style="padding:5px 6px;width:130px">${grCellSelect(GR_STORES, data.store||'BNS1-TIMCO')}</td>
+    <td style="padding:5px 6px;width:90px">${grCellInput(data.receipt_id||'','100%')}</td>
+    <td style="padding:5px 4px;text-align:center">
+      <button onclick="this.closest('tr').remove()" style="background:var(--coral-bg);color:var(--coral);border:1px solid #3a1515;border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer">✕</button>
+    </td>`;
+  tbody.appendChild(tr);
+}
+
+async function submitGRMulti(){
+  const po = $('gr-po').value.trim();
+  const date = $('gr-date').value||today();
+  const rows = $('gr-rows').querySelectorAll('tr');
+  if(!po){toast('⚠ กรุณาระบุเลข PO');return;}
+  if(!rows.length){toast('⚠ กรุณาเพิ่มอย่างน้อย 1 รายการ');return;}
+
+  // build preview summary first
+  const preview=[];
+  rows.forEach(tr=>{
+    const inputs  = tr.querySelectorAll('input');
+    const desc    = inputs[2].value.trim();
+    const qty     = parseFloat(inputs[4].value)||0;
+    if(desc&&qty) preview.push(`• ${desc} — ${qty}`);
+  });
+  if(!preview.length){toast('⚠ ไม่มีรายการที่บันทึกได้ (กรุณาใส่ Description และ Qty)');return;}
+  const ok = await modalConfirm(`PO: ${po}\nวันที่: ${date}\n\nรายการรับเข้า (${preview.length}):\n${preview.join('\n')}`, '✓ ยืนยันบันทึก GR');
+  if(!ok) return;
+
+  let saved=0, skipped=0;
+  rows.forEach(tr=>{
+    const inputs  = tr.querySelectorAll('input');
+    const selects = tr.querySelectorAll('select');
+    const desc    = inputs[2].value.trim();
+    const poQty   = parseFloat(inputs[3].value)||0;
+    const qty     = parseFloat(inputs[4].value)||0;
+    const unit    = selects[0].value;
+    const store   = selects[1].value;
+    const receipt = inputs[5]?.value||'-';
+    if(!desc||!qty){skipped++;return;}
+
+    const id  = nid('GR');
+    const key = desc.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'').slice(0,40);
+    const code = inputs[1].value.trim()||('MAT-'+String(Object.keys(S.balance).length+1).padStart(4,'0'));
+    if(!S.balance[key]) S.balance[key]={name:desc,code,qty:0,unit,store,opening:0,in:0,out:0,avg_cost:0};
+    S.balance[key].qty += qty; S.balance[key].in += qty;
+    const variance = qty - poQty;
+    S.grLog.unshift({id,po,item:desc,poQty,qty,unit,store,date,variance,receiptId:receipt});
+    S.masterLog.unshift({id,type:'GR',item:desc,qty,detail:'PO:'+po,date});
+    saved++;
+  });
+
+  if(!saved){toast('⚠ ไม่มีรายการที่บันทึกได้ (กรุณาใส่ Description และ Qty)');return;}
+  renderGRLog(); populateItemSelects(); saveState();
+  $('gr-alert').innerHTML=`<div class="alert alert-ok">✓ บันทึก ${saved} items สำเร็จ${skipped?` (ข้าม ${skipped} แถวที่ไม่ครบ)`:''}</div>`;
+  $('gr-alert').style.display='block';
+  toast(`✓ บันทึก GR ${saved} items สำเร็จ`);
+}
+
+function clearGRMulti(){
+  $('gr-po').value=''; $('gr-supplier').value='';
+  $('gr-date').value=today();
+  $('gr-rows').innerHTML='';
+  $('gr-alert').style.display='none';
+  addGRRow(); addGRRow(); addGRRow(); // start with 3 empty rows
+}
+
+function renderGRLog(){
+  const tb=$('gr-log');
+  if(!S.grLog.length){tb.innerHTML='<tr><td colspan="8" style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีรายการ GR</td></tr>';return;}
+  tb.innerHTML=S.grLog.map(r=>{
+    const vc=r.variance===0?'badge-teal':r.variance>0?'badge-amber':'badge-coral';
+    return`<tr>
+      <td><span class="badge badge-blue">${esc(r.id)}</span></td>
+      <td style="font-size:11px;color:var(--text2)">${esc(r.po)}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.item)}">${esc(r.item)}</td>
+      <td class="num">${r.poQty||'—'}</td>
+      <td class="num qty-pos">${r.qty}</td>
+      <td><span class="badge ${vc}">${r.variance>0?'+':''}${r.variance}</span></td>
+      <td style="font-size:11px">${esc(r.store)}</td>
+      <td style="font-size:11px;color:var(--text3)">${r.date}</td>
+    </tr>`;
+  }).join('');
+}
+
+// stubs for old references
+function validatePO(){}
+function submitGR(){ submitGRMulti(); }
+function clearGR(){ clearGRMulti(); }
+function validateManualPO(){}
+function submitManualGR(){}
+function clearManualGR(){}
+function toggleManualGR(){}
+function resetGRFlow(){}
+function clearGRImage(){}
+
+// ── ISSUE MULTI-ROW ──
+function buildIssueRowHTML(idx){
+  return `
+    <td style="padding:5px 6px;min-width:240px">
+      <input type="text" class="issue-item-input" data-idx="${idx}" data-key="" list="issue-items-datalist" placeholder="🔍 ค้นหา item (ชื่อ / MAT code)..." autocomplete="off"
+        style="width:100%;padding:5px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;font-family:inherit"
+        oninput="onIssueItemInput(${idx})">
+    </td>
+    <td style="padding:5px 6px;width:80px">
+      <input type="number" class="issue-qty" data-idx="${idx}" min="1" placeholder="0" style="width:100%;padding:5px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--teal);font-weight:600;text-align:right;font-size:12px" oninput="updateIssueRow(${idx})">
+    </td>
+    <td style="padding:5px 6px;width:50px">
+      <span class="issue-unit" data-idx="${idx}" style="font-size:11px;color:var(--text3)">—</span>
+    </td>
+    <td style="padding:5px 6px;width:90px;text-align:right">
+      <span class="issue-stock" data-idx="${idx}" style="font-size:12px;color:var(--text2)">—</span>
+    </td>
+    <td style="padding:5px 6px;width:90px;text-align:right">
+      <span class="issue-after" data-idx="${idx}" style="font-size:12px;font-weight:600">—</span>
+    </td>
+    <td style="padding:5px 4px;text-align:center">
+      <button onclick="this.closest('tr').remove()" style="background:var(--coral-bg);color:var(--coral);border:1px solid #3a1515;border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer">✕</button>
+    </td>`;
+}
+
+// label <-> key lookup for the issue item search input
+let ISSUE_ITEM_LABELS = {};
+function buildIssueItemLabel(v){
+  return `${v.name} — ${v.code} — ${v.store} (คงเหลือ ${v.qty} ${v.unit})`;
+}
+function onIssueItemInput(idx){
+  const inp = document.querySelector(`.issue-item-input[data-idx="${idx}"]`);
+  if(!inp) return;
+  const key = ISSUE_ITEM_LABELS[inp.value] || '';
+  inp.dataset.key = key;
+  updateIssueRow(idx);
+}
+
+let issueRowIdx = 0;
+function addIssueRow(){
+  const tbody = $('issue-rows');
+  const tr = document.createElement('tr');
+  tr.style.borderBottom = '1px solid var(--border)';
+  tr.dataset.idx = issueRowIdx;
+  tr.innerHTML = buildIssueRowHTML(issueRowIdx);
+  tbody.appendChild(tr);
+  issueRowIdx++;
+}
+
+function updateIssueRow(idx){
+  const selEl  = document.querySelector(`.issue-item-input[data-idx="${idx}"]`);
+  const qtyEl  = document.querySelector(`.issue-qty[data-idx="${idx}"]`);
+  const unitEl = document.querySelector(`.issue-unit[data-idx="${idx}"]`);
+  const stEl   = document.querySelector(`.issue-stock[data-idx="${idx}"]`);
+  const afEl   = document.querySelector(`.issue-after[data-idx="${idx}"]`);
+  if(!selEl) return;
+  const key  = selEl.dataset.key||'';
+  const qty  = parseFloat(qtyEl?.value)||0;
+  const item = S.balance[key];
+  if(!item){ unitEl.textContent='—'; stEl.textContent='—'; afEl.textContent='—'; return; }
+  unitEl.textContent = item.unit;
+  stEl.textContent   = item.qty+' '+item.unit;
+  const after = item.qty - qty;
+  afEl.textContent   = after+' '+item.unit;
+  afEl.style.color   = after<0?'var(--coral)':after<10?'var(--amber)':'var(--teal)';
+}
+
+async function submitIssueMulti(){
+  const type      = $('txn-type').value;
+  const requester = $('txn-requester').value||'-';
+  const wo        = $('txn-wo').value||'-';
+  const date      = $('txn-date').value||today();
+  const from      = type==='transfer'?$('txn-from').value:'';
+  const to        = type==='transfer'?$('txn-to').value:'';
+  const rows      = $('issue-rows').querySelectorAll('tr');
+  if(!rows.length){toast('⚠ กรุณาเพิ่มอย่างน้อย 1 รายการ');return;}
+
+  const txnRecs = [];
+  let errors = [];
+  rows.forEach(tr=>{
+    const selEl = tr.querySelector('.issue-item-input');
+    const qtyEl = tr.querySelector('.issue-qty');
+    if(!selEl||!qtyEl) return;
+    const key = selEl.dataset.key||'';
+    const qty = parseFloat(qtyEl.value)||0;
+    if(!key||!qty) return;
+    const item = S.balance[key];
+    if(!item){ errors.push(`ไม่พบ item`); return; }
+    if(qty>item.qty){ errors.push(`${item.name}: stock ไม่พอ (มี ${item.qty} ${item.unit})`); return; }
+    txnRecs.push({key,item,qty,from:from||item.store,to});
+  });
+
+  if(errors.length){
+    $('issue-alert').innerHTML=`<div class="alert alert-err">✗ ${errors.join('<br>')}</div>`;
+    $('issue-alert').style.display='block'; return;
+  }
+  if(!txnRecs.length){toast('⚠ ไม่มีรายการที่สมบูรณ์');return;}
+
+  const typeTH = type==='transfer'?'โอนย้าย (Transfer)':'เบิก (Issue)';
+  const preview = txnRecs.map(r=>`• ${r.item.name} — ${r.qty} ${r.item.unit}`).join('\n');
+  const ok = await modalConfirm(`ประเภท: ${typeTH}\nผู้เบิก: ${requester}\nWO/Ref: ${wo}\n${type==='transfer'?`จาก: ${from} → ไปที่: ${to}\n`:''}\nรายการ (${txnRecs.length}):\n${preview}`, '✓ ยืนยันการทำรายการ');
+  if(!ok) return;
+
+  // commit
+  const batchId = nid(type==='transfer'?'TRF':'ISS');
+  txnRecs.forEach((r,i)=>{
+    const id = i===0?batchId:nid(type==='transfer'?'TRF':'ISS');
+    r.item.qty -= r.qty; r.item.out += r.qty;
+    S.txnLog.unshift({id,type:type.toUpperCase(),item:r.item.name,code:r.item.code,qty:r.qty,unit:r.item.unit,wo,requester,from:r.from,to:r.to||'-',date,balanceAfter:r.item.qty,store:r.item.store});
+    S.masterLog.unshift({id,type:type.toUpperCase(),item:r.item.name,qty:r.qty,detail:wo,date});
+  });
+
+  // generate ใบเบิก (multi-item)
+  if(type==='issue') genReqDocMulti(batchId, txnRecs, requester, wo, date);
+
+  renderTxnLog(); populateItemSelects(); saveState();
+  $('issue-alert').innerHTML=`<div class="alert alert-ok">✓ บันทึก ${txnRecs.length} items สำเร็จ</div>`;
+  $('issue-alert').style.display='block';
+  toast(`✓ บันทึก ${type} ${txnRecs.length} items สำเร็จ`);
+}
+
+function genReqDocMulti(batchId, recs, requester, wo, date){
+  $('doc-id').textContent   = batchId;
+  $('doc-date').textContent = date;
+  $('doc-requester').textContent = requester;
+  $('doc-wo').textContent   = wo;
+  $('doc-store').textContent = recs[0]?.item.store||'—';
+  $('sign-req').textContent  = requester!=='-'?requester:'___________';
+  $('doc-items').innerHTML = recs.map((r,i)=>`<tr>
+    <td style="color:var(--text3)">${i+1}</td>
+    <td style="font-size:11px;color:var(--text3)">${esc(r.item.code)}</td>
+    <td style="font-weight:500">${esc(r.item.name)}</td>
+    <td>${esc(r.item.unit)}</td>
+    <td style="color:var(--teal);font-weight:600">${r.qty}</td>
+    <td style="color:${r.item.qty<10?'var(--coral)':'var(--text2)'}">${r.item.qty}</td>
+    <td style="color:var(--text3)">—</td>
+  </tr>`).join('');
+  $('req-doc-card').style.display='block';
+  $('req-doc-card').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function clearIssueMulti(){
+  ['txn-requester','txn-wo'].forEach(id=>$(id).value='');
+  $('txn-date').value=today();
+  $('issue-rows').innerHTML='';
+  $('issue-alert').style.display='none';
+  $('req-doc-card').style.display='none';
+  issueRowIdx=0;
+  addIssueRow(); addIssueRow(); addIssueRow();
+}
+
+// stubs for old single-item references
+function checkStock(){}
+function checkStockByKey(){}
+function submitTxn(){ submitIssueMulti(); }
+function clearTxn(){ clearIssueMulti(); }
+function genReqDoc(r){ genReqDocMulti(r.id,[{item:r,qty:r.qty}],r.requester,r.wo,r.date); }
+
+// ── Copy ใบเบิก (multi) ──
+function copyReqDoc(){
+  const rows = $('doc-items').querySelectorAll('tr');
+  let lines='';
+  rows.forEach((tr,i)=>{
+    const tds=tr.querySelectorAll('td');
+    lines+=`${i+1}  ${tds[1]?.textContent?.padEnd(14,' ')||''}${tds[2]?.textContent?.substring(0,24).padEnd(24,' ')||''}  ${(tds[3]?.textContent||'').padEnd(5,' ')}  ${(tds[4]?.textContent||'').padEnd(9,' ')}${tds[5]?.textContent||''}\n`;
+  });
+  const txt=`ใบเบิกวัสดุ / Material Requisition Form\nBNS1-TIMCO Storeroom — Banpu NEXT\n${'═'.repeat(52)}\nเลขที่    : ${$('doc-id').textContent}\nวันที่     : ${$('doc-date').textContent}\nผู้เบิก    : ${$('doc-requester').textContent}\nWO/Ref   : ${$('doc-wo').textContent}\nStoreroom : ${$('doc-store').textContent}\n${'─'.repeat(52)}\n#  MAT Code      รายการ                    Unit  Qty เบิก  คงเหลือ\n${lines}${'─'.repeat(52)}\nผู้เบิก: _________________\nผู้จ่ายของ: ______________\nผู้อนุมัติ: _______________\n\n[DRAFT — โปรดตรวจสอบก่อนส่ง warehouse]`;
+  navigator.clipboard.writeText(txt).then(()=>confirm('copy-req-ok'));
+}
+
+// ── INTERACTIVE STOCK BALANCE ──
+let SB = { sort:'value-desc', page:1, perPage:20, highlight:null };
+
+function sbToggleSort(col){
+  const cur = SB.sort;
+  if(cur === col+'-desc') SB.sort = col+'-asc';
+  else SB.sort = col+'-desc';
+  SB.page = 1;
+  renderStockBalance();
+}
+
+function sbGetFiltered(){
+  const search = ($('sb-search')||{value:''}).value.toLowerCase().trim();
+  const store  = ($('sb-filter-store')||{value:''}).value;
+  const status = ($('sb-filter-status')||{value:''}).value;
+  const sort   = SB.sort;
+
+  let items = Object.values(S.balance).map(b=>({
+    ...b, value:(b.qty||0)*(b.avg_cost||0),
+    status: (b.qty||0)===0?'zero':(b.qty||0)<=2?'low':'ok'
+  }));
+
+  if(search) items = items.filter(b=>
+    (b.name||'').toLowerCase().includes(search)||
+    (b.code||'').toLowerCase().includes(search)||
+    (b.store||'').toLowerCase().includes(search)
+  );
+  if(store)  items = items.filter(b=>b.store===store);
+  if(status) items = items.filter(b=>b.status===status);
+
+  const [col,dir] = sort.split('-');
+  items.sort((a,b2)=>{
+    const av = ['name','code','store'].includes(col) ? (a[col]||'').toLowerCase() : (a[col]||0);
+    const bv = ['name','code','store'].includes(col) ? (b2[col]||'').toLowerCase() : (b2[col]||0);
+    if(av<bv) return dir==='asc'?-1:1;
+    if(av>bv) return dir==='asc'?1:-1;
+    return 0;
+  });
+  return items;
+}
+
+function renderStockBalance(){
+  const items = sbGetFiltered();
+  const totalFiltered = items.length;
+  const totalPages = Math.max(1, Math.ceil(totalFiltered/SB.perPage));
+  SB.page = Math.min(SB.page, totalPages);
+  const pageItems = items.slice((SB.page-1)*SB.perPage, SB.page*SB.perPage);
+
+  // populate storeroom filter once
+  const sfEl=$('sb-filter-store');
+  if(sfEl && sfEl.options.length<=1){
+    const stores=[...new Set(Object.values(S.balance).map(b=>b.store))].sort();
+    stores.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sfEl.appendChild(o);});
+  }
+
+  // sort indicators
+  ['name','code','store','qty','avg_cost','value'].forEach(col=>{
+    const el=$('sb-th-'+col);if(!el)return;
+    const [c,d]=SB.sort.split('-');
+    el.textContent=c===col?(d==='desc'?'↓':'↑'):'';
+  });
+
+  $('sb-count').textContent=`${totalFiltered} รายการ`;
+
+  // ── CHART top 20 by value ──
+  const chartItems=[...items].sort((a,b)=>b.value-a.value).slice(0,20);
+  const maxVal=Math.max(...chartItems.map(x=>x.value),1);
+  const chartEl=$('sb-chart'), labelsEl=$('sb-chart-labels');
+  if(chartEl){
+    chartEl.innerHTML=chartItems.map((item,i)=>{
+      const pct=(item.value/maxVal*100).toFixed(1);
+      const isHL=SB.highlight&&(item.code===SB.highlight||item.name===SB.highlight);
+      const color=item.status==='zero'?'var(--coral)':item.status==='low'?'var(--amber)':DASH_COLORS[i%DASH_COLORS.length];
+      const dimmed=SB.highlight&&!isHL;
+      return`<div style="flex:1;min-width:20px;max-width:40px;display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer;height:80px"
+        title="${esc(item.name)} — ฿${fmtNum(item.value)}" onclick="sbClickBar('${esc(item.code||item.name).replace(/'/g,"\\'")}')">
+        <div style="width:100%;height:${pct}%;background:${color};border-radius:3px 3px 0 0;
+          opacity:${dimmed?.25:isHL?1:.8};transition:all .2s;
+          ${isHL?'outline:2px solid rgba(255,255,255,.6);outline-offset:1px':''}"></div>
+      </div>`;
+    }).join('');
+    labelsEl.innerHTML=chartItems.map(item=>
+      `<div style="flex:1;min-width:20px;max-width:40px;font-size:8px;color:var(--text3);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-top:3px"
+        title="${esc(item.name)}">${esc((item.code||item.name).slice(0,7))}</div>`
+    ).join('');
+  }
+
+  // ── TABLE ──
+  const tbody=$('sb-tbody');if(!tbody)return;
+  if(!pageItems.length){
+    tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px">ไม่พบรายการ</td></tr>`;
+  } else {
+    tbody.innerHTML=pageItems.map(b=>{
+      const isHL=SB.highlight&&(b.code===SB.highlight||b.name===SB.highlight);
+      const pill=b.status==='zero'?`<span class="pill-out">หมด</span>`:b.status==='low'?`<span class="pill-low">ใกล้หมด</span>`:`<span class="pill-ok">ปกติ</span>`;
+      const valColor=b.value>50000?'var(--amber)':b.value>10000?'var(--teal)':'var(--text2)';
+      const qtyColor=b.qty===0?'var(--coral)':b.qty<=2?'var(--amber)':'var(--text)';
+      return`<tr style="${isHL?'background:color-mix(in srgb,var(--teal) 8%,var(--bg3));':''};cursor:pointer"
+        onclick="sbShowPopup(event,'${esc((b.code||'').replace(/'/g,"\\'"))}','${esc((b.name||'').replace(/'/g,"\\'"))}')">
+        <td style="font-weight:${isHL?'600':'400'}">${esc(b.name)}</td>
+        <td style="font-size:11px;color:var(--text3)">${esc(b.code||'-')}</td>
+        <td><span class="badge badge-blue" style="font-size:10px">${esc(b.store)}</span></td>
+        <td style="text-align:right;font-weight:600;color:${qtyColor}">${fmtNum(b.qty||0)}</td>
+        <td style="text-align:right;font-size:11px;color:var(--text3)">${esc(b.unit||'')}</td>
+        <td style="text-align:right;font-size:11px;color:var(--text3)">฿${fmtNum(b.avg_cost||0)}</td>
+        <td style="text-align:right;font-weight:700;color:${valColor}">฿${fmtNum(b.value)}</td>
+        <td style="text-align:center">${pill}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── PAGINATION ──
+  const pgEl=$('sb-pagination');if(!pgEl)return;
+  if(totalPages<=1){pgEl.innerHTML='';return;}
+  const btnStyle=`padding:3px 8px;font-size:11px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:4px;cursor:pointer`;
+  const actStyle=`padding:3px 8px;font-size:11px;background:var(--teal);color:var(--bg);border:1px solid var(--teal2);border-radius:4px;cursor:pointer;font-weight:600`;
+  let html=`<span style="font-size:11px;color:var(--text3)">หน้า ${SB.page}/${totalPages} (${totalFiltered} รายการ)</span>`;
+  html+=`<button onclick="sbPage(1)" ${SB.page===1?'disabled':''} style="${btnStyle}">«</button>`;
+  html+=`<button onclick="sbPage(${SB.page-1})" ${SB.page===1?'disabled':''} style="${btnStyle}">‹</button>`;
+  for(let p=Math.max(1,SB.page-2);p<=Math.min(totalPages,SB.page+2);p++){
+    html+=`<button onclick="sbPage(${p})" style="${p===SB.page?actStyle:btnStyle}">${p}</button>`;
+  }
+  html+=`<button onclick="sbPage(${SB.page+1})" ${SB.page===totalPages?'disabled':''} style="${btnStyle}">›</button>`;
+  html+=`<button onclick="sbPage(${totalPages})" ${SB.page===totalPages?'disabled':''} style="${btnStyle}">»</button>`;
+  pgEl.innerHTML=html;
+}
+
+function sbPage(p){SB.page=p;renderStockBalance();}
+
+function sbClickBar(key){
+  SB.highlight=SB.highlight===key?null:key;
+  if(SB.highlight){
+    const items=sbGetFiltered();
+    const idx=items.findIndex(b=>b.code===key||b.name===key);
+    if(idx>=0) SB.page=Math.floor(idx/SB.perPage)+1;
+  }
+  renderStockBalance();
+}
+
+function sbShowPopup(e, code, name){
+  const b=Object.values(S.balance).find(b=>b.code===code||b.name===name);
+  if(!b)return;
+  const value=(b.qty||0)*(b.avg_cost||0);
+  const txns=(S.txnLog||[]).filter(r=>r.code===code||r.item===name).slice(0,5);
+  $('sb-popup-title').textContent=b.name;
+  $('sb-popup-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:5px 12px">
+      <span style="color:var(--text3)">MAT Code</span><span>${esc(b.code||'-')}</span>
+      <span style="color:var(--text3)">Storeroom</span><span><span class="badge badge-blue" style="font-size:10px">${esc(b.store)}</span></span>
+      <span style="color:var(--text3)">Opening</span><span>${fmtNum(b.opening||0)} ${esc(b.unit)}</span>
+      <span style="color:var(--text3)">รับเข้า</span><span style="color:var(--teal)">+${fmtNum(b.in||0)}</span>
+      <span style="color:var(--text3)">เบิกออก</span><span style="color:var(--coral)">-${fmtNum(b.out||0)}</span>
+      <span style="color:var(--text3)">คงเหลือ</span><span style="font-weight:700;color:${(b.qty||0)===0?'var(--coral)':(b.qty||0)<=2?'var(--amber)':'var(--teal)'}">${fmtNum(b.qty||0)} ${esc(b.unit)}</span>
+      <span style="color:var(--text3)">Avg Cost</span><span>฿${fmtNum(b.avg_cost||0)}</span>
+      <span style="color:var(--text3)">มูลค่ารวม</span><span style="font-weight:700;color:var(--amber)">฿${fmtNum(value)}</span>
+    </div>
+    ${txns.length?`<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:5px">ประวัติเบิกล่าสุด</div>
+      ${txns.map(t=>`<div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;gap:10px">
+        <span style="color:var(--text3)">${esc(t.id)}</span>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)">${esc(t.requester||'-')}</span>
+        <span style="color:var(--coral)">-${t.qty}</span>
+        <span style="color:var(--text3)">${t.date}</span>
+      </div>`).join('')}
+    </div>`:''}`;
+  const popup=$('sb-popup');
+  popup.style.display='block';
+  requestAnimationFrame(()=>{
+    const rect=popup.getBoundingClientRect();
+    let x=e.clientX+14,y=e.clientY+14;
+    if(x+rect.width>window.innerWidth-10) x=e.clientX-rect.width-14;
+    if(y+rect.height>window.innerHeight-10) y=e.clientY-rect.height-14;
+    popup.style.left=x+'px';popup.style.top=y+'px';
+  });
+  e.stopPropagation();
+}
+
+document.addEventListener('click',e=>{
+  const p=$('sb-popup');
+  if(p&&!p.contains(e.target)){p.style.display='none';}
+});
+
+// ── GR IMAGE FLOW ──
+let grImageBase64 = null;
+let grImageMime   = 'image/png';
+
+function handleGRImage(input){
+  const file = input.files[0];
+  if(!file) return;
+  grImageMime = file.type || 'image/png';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    grImageBase64 = dataUrl.split(',')[1];
+    $('gr-img-preview').src = dataUrl;
+    $('gr-img-preview-wrap').style.display = 'block';
+    $('gr-img-label').innerHTML = `<div style="color:var(--teal);font-weight:500">✓ ${esc(file.name)}</div><div style="font-size:11px;color:var(--text3);margin-top:4px">พร้อม parse</div>`;
+    $('gr-parse-btn-row').style.display = 'flex';
+    $('gr-parse-status').style.display = 'none';
+    $('gr-parsed-card').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// drag-drop support
+(function(){
+  const zone = $('gr-img-zone');
+  if(!zone) return;
+  zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.style.borderColor='var(--blue)'; });
+  zone.addEventListener('dragleave', ()=>{ zone.style.borderColor=''; });
+  zone.addEventListener('drop', e=>{
+    e.preventDefault(); zone.style.borderColor='';
+    const file = e.dataTransfer.files[0];
+    if(file && file.type.startsWith('image/')){
+      const dt = new DataTransfer(); dt.items.add(file);
+      $('gr-img-input').files = dt.files;
+      handleGRImage($('gr-img-input'));
+    }
+  });
+  zone.addEventListener('click', ()=>$('gr-img-input').click());
+})();
+
+async function parseGRImage(){
+  if(!grImageBase64){ toast('⚠ กรุณา upload รูปก่อน'); return; }
+  const apiKey = getApiKey();
+  if(!apiKey){ toast('⚠ กรุณาใส่ API key ก่อน'); return; }
+
+  const btn = $('gr-parse-btn');
+  btn.disabled = true; btn.textContent = '⏳ AI กำลัง parse...';
+  $('gr-parse-status').innerHTML = '<div class="alert alert-ok">🤖 Claude กำลังอ่านข้อมูลจาก screenshot...</div>';
+  $('gr-parse-status').style.display = 'block';
+
+  const prompt = `You are a data extraction assistant for a warehouse management system.
+Extract ALL data from this Maximo Material Receipt screenshot and return ONLY valid JSON, no markdown, no explanation.
+
+Return this exact structure:
+{
+  "po_number": "string",
+  "supplier": "string",
+  "site": "string",
+  "po_status": "string",
+  "receipt_status": "string",
+  "ordered_date": "string",
+  "pretax_total": "string",
+  "items": [
+    {
+      "po_line": "string",
+      "item_no": "string",
+      "description": "string",
+      "quantity": number,
+      "unit": "string",
+      "type": "string",
+      "insp_status": "string",
+      "actual_date": "string",
+      "receipt_id": "string",
+      "receipt_number": "string"
+    }
+  ]
+}
+
+Extract every line item from the Material Receipts table. If a field is not visible, use empty string.`;
+
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model:'claude-opus-4-5',
+        max_tokens:1500,
+        messages:[{
+          role:'user',
+          content:[
+            { type:'image', source:{ type:'base64', media_type: grImageMime, data: grImageBase64 } },
+            { type:'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    if(!resp.ok){
+      const err = await resp.json();
+      throw new Error(err.error?.message || 'API error '+resp.status);
+    }
+
+    const data = await resp.json();
+    const raw = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+
+    fillGRForm(parsed);
+    $('gr-parse-status').innerHTML = `<div class="alert alert-ok">✓ Parse สำเร็จ — พบ ${parsed.items?.length||0} items กรุณาตรวจสอบก่อนบันทึก</div>`;
+    $('gr-parsed-card').style.display = 'block';
+    $('gr-parsed-card').scrollIntoView({behavior:'smooth',block:'start'});
+
+  }catch(err){
+    $('gr-parse-status').innerHTML = `<div class="alert alert-err">✗ Error: ${esc(err.message)}</div>`;
+    toast('✗ Parse ไม่สำเร็จ: '+err.message);
+  }
+
+  btn.disabled = false; btn.textContent = '🤖 Parse ด้วย AI';
+}
+
+function fillGRForm(data){
+  $('gr-po').value         = data.po_number||'';
+  $('gr-site').value       = data.site||'';
+  $('gr-supplier').value   = data.supplier||'';
+  $('gr-po-status').value  = data.po_status||'';
+  $('gr-receipt-status').value = data.receipt_status||'';
+
+  // parse date
+  const rawDate = data.ordered_date||data.actual_date||'';
+  if(rawDate){
+    const parts = rawDate.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if(parts){
+      const y=parts[3].length===2?'20'+parts[3]:parts[3];
+      $('gr-date').value=`${y}-${parts[2].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
+    }
+  } else {
+    $('gr-date').value = today();
+  }
+
+  // render items
+  const tbody = $('gr-items-body');
+  tbody.innerHTML = '';
+  (data.items||[]).forEach((item,i)=>{ appendGRItemRow(item, i); });
+}
+
+function appendGRItemRow(item={}, idx=0){
+  const tbody = $('gr-items-body');
+  const tr = document.createElement('tr');
+  tr.dataset.idx = idx;
+  tr.innerHTML = `
+    <td><input style="width:60px;padding:4px 6px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)" value="${esc(item.po_line||'')}"></td>
+    <td><input style="width:100px;padding:4px 6px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)" value="${esc(item.item_no||'')}"></td>
+    <td><input style="width:200px;padding:4px 6px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)" value="${esc(item.description||'')}"></td>
+    <td><input type="number" style="width:70px;padding:4px 6px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--teal);font-weight:600;text-align:right" value="${item.quantity||0}"></td>
+    <td><input style="width:50px;padding:4px 6px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)" value="${esc(item.unit||'UNI')}"></td>
+    <td><input style="width:70px;padding:4px 6px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)" value="${esc(item.insp_status||'')}"></td>
+    <td><input style="width:80px;padding:4px 6px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)" value="${esc(item.receipt_id||'')}"></td>
+    <td><select style="padding:4px 6px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)">
+      <option>BNS1-TIMCO</option><option>BNS1-BKKHO</option><option>BNEXT-TIMCO</option>
+    </select></td>
+    <td><button onclick="this.closest('tr').remove()" style="background:var(--coral-bg);color:var(--coral);border:1px solid #3a1515;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function addGRItemRow(){ appendGRItemRow({},Date.now()); }
+
+function confirmGR(){
+  const po = $('gr-po').value.trim();
+  const date = $('gr-date').value||today();
+  const rows = $('gr-items-body').querySelectorAll('tr');
+  if(!po){ toast('⚠ กรุณาระบุเลข PO');return; }
+  if(!rows.length){ toast('⚠ ไม่มี items');return; }
+
+  let saved=0;
+  rows.forEach(tr=>{
+    const inputs = tr.querySelectorAll('input');
+    const sel    = tr.querySelector('select');
+    const desc   = inputs[2].value.trim();
+    const qty    = parseFloat(inputs[3].value)||0;
+    const unit   = inputs[4].value||'UNI';
+    const receiptId = inputs[5].value||'-';
+    const store  = sel?sel.value:'BNS1-TIMCO';
+    if(!desc||!qty) return;
+
+    const id = nid('GR');
+    const key = desc.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'').slice(0,40);
+    const code = inputs[1].value.trim()||('MAT-'+String(Object.keys(S.balance).length+1).padStart(4,'0'));
+    if(!S.balance[key]) S.balance[key]={name:desc,code,qty:0,unit,store,opening:0,in:0,out:0,avg_cost:0};
+    S.balance[key].qty += qty;
+    S.balance[key].in  += qty;
+
+    S.grLog.unshift({id,po,item:desc,poQty:qty,qty,unit,store,date,variance:0,receiptId,source:'AI'});
+    S.masterLog.unshift({id,type:'GR',item:desc,qty,detail:'PO:'+po,date});
+    saved++;
+  });
+
+  if(!saved){toast('⚠ ไม่มี item ที่บันทึกได้');return;}
+  renderGRLog();
+  populateItemSelects();
+  saveState();
+  $('gr-confirm-alert').innerHTML=`<div class="alert alert-ok">✓ บันทึก ${saved} items สำเร็จ</div>`;
+  $('gr-confirm-alert').style.display='block';
+  toast(`✓ บันทึก GR ${saved} items สำเร็จ`);
+}
+
+function resetGRFlow(){
+  grImageBase64=null;
+  $('gr-img-input').value='';
+  $('gr-img-preview-wrap').style.display='none';
+  $('gr-img-label').innerHTML=`<div style="font-size:28px;margin-bottom:8px">📷</div><div style="font-weight:500;font-size:13px">คลิกหรือลาก screenshot จาก Maximo มาวางที่นี่</div><div style="font-size:11px;color:var(--text3);margin-top:6px">รองรับ PNG, JPG — AI จะ parse PO, Items, Qty ให้อัตโนมัติ</div>`;
+  $('gr-parse-btn-row').style.display='none';
+  $('gr-parse-status').style.display='none';
+  $('gr-parsed-card').style.display='none';
+  $('gr-items-body').innerHTML='';
+}
+function clearGRImage(){ resetGRFlow(); }
+
+// ── MANUAL GR ──
+function toggleManualGR(){
+  const form=$('manual-gr-form'), lbl=$('manual-toggle-label');
+  const open=form.style.display==='block';
+  form.style.display=open?'none':'block';
+  lbl.textContent=open?'▼ ขยาย':'▲ ย่อ';
+}
+
+function validateManualPO(){
+  const pq=parseFloat($('mgr-po-qty').value)||0,rq=parseFloat($('mgr-qty').value)||0;
+  const el=$('mgr-match-alert');
+  if(!pq||!rq){el.style.display='none';return;}
+  const d=rq-pq;
+  el.innerHTML=d===0?'<div class="alert alert-ok">✓ Qty match</div>':'<div class="alert alert-warn">⚠ Variance: '+(d>0?'+':'')+d+'</div>';
+  el.style.display='block';
+}
+
+function submitManualGR(){
+  const po=$('mgr-po').value.trim(),item=$('mgr-item').value.trim(),qty=parseFloat($('mgr-qty').value)||0;
+  if(!po||!item||!qty){toast('⚠ กรุณากรอก PO, Item และ Qty');return;}
+  const unit=$('mgr-unit').value,store=$('mgr-store').value,date=$('mgr-date').value||today();
+  const poQty=parseFloat($('mgr-po-qty').value)||qty;
+  const id=nid('GR');
+  const key=item.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'').slice(0,40);
+  const code=$('mgr-mat').value.trim()||('MAT-'+String(Object.keys(S.balance).length+1).padStart(4,'0'));
+  if(!S.balance[key])S.balance[key]={name:item,code,qty:0,unit,store,opening:0,in:0,out:0,avg_cost:0};
+  S.balance[key].qty+=qty;S.balance[key].in+=qty;
+  S.grLog.unshift({id,po,item,poQty,qty,unit,store,date,variance:qty-poQty,receiptId:$('mgr-do').value||'-',source:'Manual'});
+  S.masterLog.unshift({id,type:'GR',item,qty,detail:'PO:'+po,date});
+  renderGRLog();populateItemSelects();saveState();clearManualGR();
+  toast('✓ บันทึก GR สำเร็จ — '+id);
+}
+
+function clearManualGR(){
+  ['mgr-po','mgr-do','mgr-item','mgr-po-qty','mgr-qty','mgr-mat'].forEach(id=>$(id).value='');
+  $('mgr-date').value=today();$('mgr-match-alert').style.display='none';
+}
+
+function renderGRLog(){
+  const tb=$('gr-log');
+  if(!S.grLog.length){tb.innerHTML='<tr><td colspan="9" style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีรายการ GR</td></tr>';return;}
+  tb.innerHTML=S.grLog.map(r=>{
+    const srcBadge=r.source==='AI'?'<span class="badge badge-purple" style="font-size:9px">AI</span>':'<span class="badge badge-gray" style="font-size:9px">Manual</span>';
+    return`<tr>
+      <td><span class="badge badge-blue">${esc(r.id)}</span></td>
+      <td style="font-size:11px;color:var(--text2)">${esc(r.po)}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.item)}">${esc(r.item)}</td>
+      <td class="num qty-pos">${r.qty}</td>
+      <td style="font-size:11px;color:var(--text3)">${esc(r.receiptId||'-')}</td>
+      <td style="font-size:11px">${esc(r.store)}</td>
+      <td style="font-size:11px;color:var(--text3)">${r.date}</td>
+      <td>${srcBadge}</td>
+      <td style="text-align:right">
+        <button onclick="deleteGR('${r.id}')" title="ลบรายการ GR (คืน stock)" style="background:var(--coral-bg);color:var(--coral);border:1px solid #3a1515;border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function deleteGR(id){
+  const idx = S.grLog.findIndex(r=>r.id===id);
+  if(idx===-1) return;
+  const r = S.grLog[idx];
+
+  // find matching balance key by desc-slug + store
+  const slug = r.item.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'').slice(0,40);
+  const balKey = Object.keys(S.balance).find(k=>{
+    const b=S.balance[k];
+    return (k===slug || b.name===r.item) && b.store===r.store;
+  });
+  const item = balKey ? S.balance[balKey] : null;
+  const stockAfter = item ? item.qty - r.qty : '?';
+
+  const ok = await modalConfirm(
+    `TXN: ${r.id}\nItem: ${r.item}\nรับเข้า: ${r.qty} ${r.unit||''}\nStoreroom: ${r.store}\nวันที่: ${r.date}\n\nลบ GR นี้และหัก stock กลับ ${r.qty} หน่วย?\n(stock จะเหลือ ${stockAfter})`,
+    '🗑 ลบ GR Transaction', true
+  );
+  if(!ok) return;
+
+  // reverse stock
+  if(item){
+    item.qty  = Math.max(0, item.qty - r.qty);
+    item.in   = Math.max(0, item.in  - r.qty);
+  }
+
+  S.grLog.splice(idx,1);
+  const mIdx = S.masterLog.findIndex(m=>m.id===id);
+  if(mIdx!==-1) S.masterLog.splice(mIdx,1);
+
+  renderGRLog(); populateItemSelects(); saveState();
+  toast(`✓ ลบ ${r.id} และหัก stock ${r.qty} หน่วยแล้ว`);
+}
+
+// stub for old validatePO reference (now handled by manual form)
+function validatePO(){}
+function submitGR(){ submitManualGR(); }
+function clearGR(){ clearManualGR(); }
+
+// ── SEARCHABLE DROPDOWN ENGINE ──
+const SD = {}; // registry: id -> {value, label, onChange}
+
+function createSD(containerId, placeholder, onChange){
+  const wrap = $(containerId);
+  if(!wrap) return;
+
+  wrap.innerHTML = `
+    <div class="sd-input" id="${containerId}-display" tabindex="0">${placeholder}</div>
+    <span class="sd-arrow">▼</span>
+    <div class="sd-panel" id="${containerId}-panel">
+      <div class="sd-search"><input type="text" placeholder="🔍 ค้นหา item..." id="${containerId}-search" autocomplete="off"></div>
+      <div class="sd-list" id="${containerId}-list"></div>
+    </div>`;
+
+  SD[containerId] = {value:'', label:placeholder, onChange, placeholder};
+
+  const display = $(`${containerId}-display`);
+  const panel   = $(`${containerId}-panel`);
+  const search  = $(`${containerId}-search`);
+  const list    = $(`${containerId}-list`);
+
+  function open(){
+    // close all others first
+    Object.keys(SD).forEach(id=>{ if(id!==containerId) closeSD(id); });
+    display.classList.add('open');
+    panel.classList.add('open');
+    search.value='';
+    renderList('');
+    search.focus();
+  }
+  function close(){
+    display.classList.remove('open');
+    panel.classList.remove('open');
+  }
+
+  display.addEventListener('click', e=>{ e.stopPropagation(); panel.classList.contains('open')?close():open(); });
+  display.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); }});
+  search.addEventListener('input', ()=>renderList(search.value.trim().toLowerCase()));
+  search.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+
+  function renderList(q){
+    const items = Object.entries(S.balance);
+    const filtered = q ? items.filter(([k,v])=>
+      v.name.toLowerCase().includes(q) ||
+      v.code.toLowerCase().includes(q) ||
+      v.store.toLowerCase().includes(q)
+    ) : items;
+
+    if(!filtered.length){
+      list.innerHTML=`<div class="sd-empty">ไม่พบ item "${q}"</div>`;
+      return;
+    }
+    list.innerHTML = filtered.map(([k,v])=>`
+      <div class="sd-opt${SD[containerId].value===k?' selected':''}" data-key="${k}">
+        <div>${v.name}</div>
+        <div class="sd-opt-sub">${v.code} · ${v.qty} ${v.unit} · ${v.store}</div>
+      </div>`).join('');
+
+    list.querySelectorAll('.sd-opt').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const k = el.dataset.key;
+        const v = S.balance[k];
+        SD[containerId].value = k;
+        SD[containerId].label = v.name;
+        display.textContent = `${v.name} (${v.qty} ${v.unit})`;
+        display.style.color = 'var(--text)';
+        close();
+        if(onChange) onChange(k);
+      });
+    });
+  }
+
+  // expose reset
+  SD[containerId].reset = ()=>{
+    SD[containerId].value='';
+    display.textContent=placeholder;
+    display.style.color='var(--text2)';
+  };
+  SD[containerId].getValue = ()=>SD[containerId].value;
+
+  // init style
+  display.style.color='var(--text2)';
+}
+
+// close on outside click
+document.addEventListener('click', ()=>Object.keys(SD).forEach(closeSD));
+function closeSD(id){
+  const p=$(`${id}-panel`), d=$(`${id}-display`);
+  if(p) p.classList.remove('open');
+  if(d) d.classList.remove('open');
+}
+
+function initSearchDropdowns(){
+  createSD('sd-txn-item','-- เลือก item --', (key)=>{ checkStockByKey(key); });
+  createSD('sd-wo-item','-- เลือก item --', null);
+}
+
+function refreshSDs(){
+  // re-render open panels if any
+  Object.keys(SD).forEach(id=>{
+    const panel=$(`${id}-panel`);
+    const search=$(`${id}-search`);
+    if(panel && panel.classList.contains('open') && search){
+      // trigger re-render
+      search.dispatchEvent(new Event('input'));
+    }
+    // update display label if selected item still valid
+    const val=SD[id].value;
+    if(val && S.balance[val]){
+      const v=S.balance[val];
+      const d=$(`${id}-display`);
+      if(d) d.textContent=`${v.name} (${v.qty} ${v.unit})`;
+    }
+  });
+}
+
+// ── ISSUE / TRANSFER ──
+function populateItemSelects(){
+  // refresh searchable dropdown for wo-item only
+  refreshSDs();
+  // build datalist of issuable items (exclude items received new this month)
+  ISSUE_ITEM_LABELS = {};
+  const opts = Object.entries(S.balance)
+    .map(([k,v])=>{
+      const label = buildIssueItemLabel(v);
+      ISSUE_ITEM_LABELS[label] = k;
+      return `<option value="${esc(label)}"></option>`;
+    }).join('');
+  const dl = $('issue-items-datalist');
+  if(dl) dl.innerHTML = opts;
+  // re-validate existing rows: clear key if item is no longer issuable, refresh stock display
+  $('issue-rows').querySelectorAll('.issue-item-input').forEach(inp=>{
+    const idx = inp.dataset.idx;
+    const key = inp.dataset.key;
+    if(key && S.balance[key]){
+      inp.value = buildIssueItemLabel(S.balance[key]);
+    }
+    updateIssueRow(idx);
+  });
+}
+
+function getSDValue(id){ return SD[id]?SD[id].getValue():''; }
+function resetSD(id){ if(SD[id]&&SD[id].reset) SD[id].reset(); }
+
+function toggleTransfer(){
+  const isT=$('txn-type').value==='transfer';
+  $('transfer-fields').style.display=isT?'grid':'none';
+}
+
+function checkStock(){
+  const key=getSDValue('sd-txn-item'), qty=parseFloat($('txn-qty').value)||0;
+  checkStockByKey(key, qty);
+}
+
+function checkStockByKey(key, qty){
+  qty = qty || parseFloat($('txn-qty').value)||0;
+  const el=$('stock-check-alert');
+  if(!key||!qty){el.style.display='none';return;}
+  const item=S.balance[key];if(!item){el.style.display='none';return;}
+  el.innerHTML=qty>item.qty
+    ?`<div class="alert alert-err">✗ Stock ไม่พอ — มีอยู่ ${item.qty} ${item.unit} เท่านั้น</div>`
+    :`<div class="alert alert-ok">✓ Stock เพียงพอ — หลังเบิกจะเหลือ ${item.qty-qty} ${item.unit}</div>`;
+  el.style.display='block';
+}
+
+function submitTxn(){
+  const key=getSDValue('sd-txn-item'), qty=parseFloat($('txn-qty').value)||0;
+  const type=$('txn-type').value;
+  if(!key||!qty){toast('⚠ กรุณาเลือก Item และ Qty');return;}
+  const item=S.balance[key];
+  if(qty>item.qty){toast('✗ Stock ไม่เพียงพอ');return;}
+  const wo=$('txn-wo').value||'-',requester=$('txn-requester').value||'-';
+  const date=$('txn-date').value||today();
+  const from=type==='transfer'?$('txn-from').value:item.store;
+  const to=type==='transfer'?$('txn-to').value:'-';
+  const id=nid(type==='transfer'?'TRF':'ISS');
+  const balBefore=item.qty;
+  item.qty-=qty;item.out+=qty;
+  const rec={id,type:type.toUpperCase(),item:item.name,code:item.code,qty,unit:item.unit,wo,requester,from,to,date,balanceAfter:item.qty,store:item.store};
+  S.txnLog.unshift(rec);
+  S.masterLog.unshift({id,type:type.toUpperCase(),item:item.name,qty,detail:wo,date});
+  if(type==='issue')genReqDoc(rec);
+  renderTxnLog();populateItemSelects();clearTxn();
+  toast('✓ บันทึกสำเร็จ — '+id+(type==='issue'?' | ใบเบิกพร้อมแล้ว ↓':''));
+}
+
+function genReqDoc(r){
+  $('doc-id').textContent=r.id;
+  $('doc-date').textContent=r.date;
+  $('doc-requester').textContent=r.requester;
+  $('doc-wo').textContent=r.wo;
+  $('doc-store').textContent=r.store;
+  $('sign-req').textContent=r.requester!=='-'?r.requester:'___________';
+  $('doc-items').innerHTML=`<tr>
+    <td style="color:var(--text3)">1</td>
+    <td style="font-size:11px;color:var(--text3)">${esc(r.code)}</td>
+    <td style="font-weight:500">${esc(r.item)}</td>
+    <td>${esc(r.unit)}</td>
+    <td style="color:var(--teal);font-weight:600">${r.qty}</td>
+    <td style="color:${r.balanceAfter<10?'var(--coral)':'var(--text2)'}">${r.balanceAfter}</td>
+    <td style="color:var(--text3)">—</td>
+  </tr>`;
+  $('req-doc-card').style.display='block';
+  $('req-doc-card').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function copyReqDoc(){
+  const r=S.txnLog.find(t=>t.type==='ISSUE');
+  if(!r)return;
+  const txt=
+`ใบเบิกวัสดุ / Material Requisition Form
+BNS1-TIMCO Storeroom — Banpu NEXT
+${'═'.repeat(44)}
+เลขที่    : ${r.id}
+วันที่     : ${r.date}
+ผู้เบิก    : ${r.requester}
+WO/Ref   : ${r.wo}
+Storeroom : ${r.store}
+${'─'.repeat(44)}
+#  MAT Code    รายการ                  Unit  Qty เบิก  คงเหลือ
+1  ${(r.code||'').padEnd(12,' ')}${r.item.substring(0,22).padEnd(22,' ')}  ${(r.unit||'').padEnd(5,' ')}  ${String(r.qty).padEnd(9,' ')}${r.balanceAfter}
+${'─'.repeat(44)}
+ผู้เบิก: _________________
+ผู้จ่ายของ: ______________
+ผู้อนุมัติ: _______________
+
+[DRAFT — โปรดตรวจสอบก่อนส่ง warehouse]`;
+  navigator.clipboard.writeText(txt).then(()=>confirm('copy-req-ok'));
+}
+
+function renderTxnLog(){
+  const tb=$('txn-log');
+  if(!S.txnLog.length){tb.innerHTML='<tr><td colspan="9" style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีรายการ</td></tr>';return;}
+  tb.innerHTML=S.txnLog.map(r=>{
+    const tc=r.type==='ISSUE'?'badge-teal':'badge-blue';
+    return`<tr><td><span class="badge ${tc}">${esc(r.id)}</span></td><td>${r.type}</td><td>${esc(r.item)}</td><td class="qty-neg">-${r.qty}</td><td>${esc(r.requester)}</td><td>${esc(r.wo)}</td><td>${esc(r.from)}${r.to!=='-'?' → '+r.to:''}</td><td>${r.date}</td>
+      <td style="white-space:nowrap;text-align:right">
+        <button onclick="editTxn('${r.id}')" title="แก้ไข qty" style="background:var(--bg3);color:var(--blue);border:1px solid var(--border);border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer;margin-right:4px">✎</button>
+        <button onclick="deleteTxn('${r.id}')" title="ลบรายการ (คืน stock)" style="background:var(--coral-bg);color:var(--coral);border:1px solid #3a1515;border-radius:4px;padding:3px 7px;font-size:11px;cursor:pointer">🗑</button>
+      </td></tr>`;
+  }).join('');
+}
+
+// find the balance entry matching a txn record
+function findBalanceForTxn(r){
+  return Object.values(S.balance).find(b=>b.code===r.code && b.store===r.store);
+}
+
+async function deleteTxn(id){
+  const idx = S.txnLog.findIndex(r=>r.id===id);
+  if(idx===-1) return;
+  const r = S.txnLog[idx];
+  const ok = await modalConfirm(`รายการ: ${r.item}\nจำนวน: -${r.qty} ${r.unit}\nTXN: ${r.id}\n\nลบรายการนี้และคืน stock ${r.qty} ${r.unit} กลับเข้า balance?`, '🗑 ลบ Transaction', true);
+  if(!ok) return;
+  const item = findBalanceForTxn(r);
+  if(item){ item.qty += r.qty; item.out = Math.max(0, item.out - r.qty); }
+  S.txnLog.splice(idx,1);
+  const mIdx = S.masterLog.findIndex(m=>m.id===id);
+  if(mIdx!==-1) S.masterLog.splice(mIdx,1);
+  renderTxnLog(); populateItemSelects(); saveState();
+  toast(`✓ ลบ ${r.id} และคืน stock ${r.qty} ${r.unit} แล้ว`);
+}
+
+async function editTxn(id){
+  const r = S.txnLog.find(t=>t.id===id);
+  if(!r) return;
+  const item = findBalanceForTxn(r);
+  const newQtyStr = await modalPrompt(`${r.item}\nจำนวนปัจจุบัน: ${r.qty} ${r.unit}${item?`\nStock คงเหลือ: ${item.qty} ${item.unit}`:''}\n\nกรอกจำนวนใหม่:`, r.qty, '✎ แก้ไขจำนวน');
+  if(newQtyStr===null) return;
+  const newQty = parseFloat(newQtyStr);
+  if(isNaN(newQty)||newQty<=0){ toast('⚠ จำนวนไม่ถูกต้อง'); return; }
+  const diff = newQty - r.qty; // positive = เบิกเพิ่ม, negative = คืนกลับ
+  if(item){
+    if(diff>0 && diff>item.qty){ toast(`⚠ stock ไม่พอ (มี ${item.qty} ${item.unit})`); return; }
+    item.qty -= diff; item.out += diff;
+    r.balanceAfter = item.qty;
+  }
+  r.qty = newQty;
+  const m = S.masterLog.find(mm=>mm.id===id);
+  if(m) m.qty = newQty;
+  renderTxnLog(); populateItemSelects(); saveState();
+  toast(`✓ แก้ไข ${r.id} เป็น ${newQty} ${r.unit} แล้ว`);
+}
+
+function clearTxn(){
+  ['txn-qty','txn-wo','txn-requester'].forEach(id=>$(id).value='');
+  resetSD('sd-txn-item');
+  $('txn-date').value=today();$('stock-check-alert').style.display='none';
+}
+
+// ── UPLOAD ──
+function handleUpload(input){
+  const file=input.files[0];if(!file)return;
+  $('upload-label').innerHTML=`<div style="color:var(--teal);font-size:13px">⏳ กำลัง parse ${esc(file.name)}...</div>`;
+  setTimeout(()=>{
+    const demo=[
+      {code:'MAT-0042',name:'Fuse 63A',qty:82,unit:'pcs',store:'BNS1-TIMCO'},
+      {code:'MAT-0187',name:'Cable Lug 50mm',qty:45,unit:'pcs',store:'BNS1-TIMCO'},
+      {code:'MAT-0291',name:'Grounding Cable 4mm',qty:47,unit:'m',store:'BNS1-TIMCO'},
+      {code:'MAT-0105',name:'Circuit Breaker 100A',qty:12,unit:'pcs',store:'BNS1-TIMCO'},
+      {code:'MAT-0334',name:'Solar Connector MC4',qty:200,unit:'pcs',store:'BNS1-TIMCO'},
+      {code:'MAT-0078',name:'Terminal Block 10mm',qty:8,unit:'pcs',store:'BNS1-TIMCO'},
+    ];
+    demo.forEach(d=>{
+      const k=d.name.toLowerCase().replace(/\s+/g,'-');
+      S.balance[k]={name:d.name,code:d.code,qty:d.qty,unit:d.unit,store:d.store,opening:d.qty,in:0,out:0};
+    });
+    $('balance-preview-body').innerHTML=demo.map(d=>`<tr><td style="color:var(--text3);font-size:11px">${d.code}</td><td>${esc(d.name)}</td><td class="qty-pos">${d.qty}</td><td>${d.unit}</td><td>${d.store}</td></tr>`).join('');
+    $('upload-preview').style.display='block';
+    $('upload-label').innerHTML=`<div style="color:var(--teal);font-weight:500">✓ โหลด ${demo.length} items จาก ${esc(file.name)} สำเร็จ</div>`;
+    populateItemSelects();toast('✓ โหลด opening balance สำเร็จ');
+  },700);
+}
+
+// ── WRITE-OFF ──
+function updateWOFields(){
+  const t=$('wo-type').value;
+  const cfg={
+    sale:['ราคาขาย (THB)','0.00','ผู้ซื้อ / บริษัท','ชื่อผู้ซื้อ'],
+    donate:['องค์กรรับบริจาค','ชื่อองค์กร','วัตถุประสงค์','เช่น CSR / ชุมชน'],
+    damage:['สาเหตุความเสียหาย','เช่น อุบัติเหตุ / เสื่อมสภาพ','ผู้รับผิดชอบ','ชื่อผู้รับผิดชอบ']
+  }[t];
+  $('wo-l1').textContent=cfg[0];$('wo-v1').placeholder=cfg[1];
+  $('wo-l2').textContent=cfg[2];$('wo-v2').placeholder=cfg[3];
+}
+
+async function generateMemo(){
+  const key=getSDValue('sd-wo-item'), qty=parseFloat($('wo-qty').value)||0;
+  const type=$('wo-type').value,reason=$('wo-reason').value.trim();
+  if(!key||!qty||!reason){toast('⚠ กรุณากรอกข้อมูลให้ครบ');return;}
+  const item=S.balance[key];
+  if(qty>item.qty){toast('✗ Qty มากกว่า stock คงเหลือ');return;}
+  const typeTHpre={sale:'ขาย (Sale)',donate:'บริจาค (Donate)',damage:'เสียหาย (Damage)'}[type];
+  const ok = await modalConfirm(`รายการ: ${item.name} (${item.code})\nจำนวน: ${qty} ${item.unit}\nประเภท: ${typeTHpre}\nStoreroom: ${item.store}\nเหตุผล: ${reason}\n\nยืนยันการ Write-off?`, '✓ ยืนยัน Write-off', true);
+  if(!ok) return;
+  const v1=$('wo-v1').value||'-',v2=$('wo-v2').value||'-';
+  const date=$('wo-date').value||today();
+  const id=nid('WO');
+  item.qty-=qty;item.out+=qty;
+  const typeTH={sale:'ขาย (Sale)',donate:'บริจาค (Donate)',damage:'เสียหาย (Damage)'}[type];
+  const extra={
+    sale:`ราคาขาย    : THB ${v1}\nผู้ซื้อ      : ${v2}`,
+    donate:`องค์กรรับ   : ${v1}\nวัตถุประสงค์: ${v2}`,
+    damage:`สาเหตุ     : ${v1}\nผู้รับผิดชอบ : ${v2}`
+  }[type];
+  $('memo-content').textContent=
+`บันทึกข้อความ (DRAFT)
+${'═'.repeat(44)}
+เลขที่     : ${id}
+วันที่      : ${date}
+เรื่อง      : การตัดจำหน่ายวัสดุ — ประเภท ${typeTH}
+${'─'.repeat(44)}
+รายละเอียดวัสดุ:
+  Item       : ${item.name} (${item.code})
+  จำนวน      : ${qty} ${item.unit}
+  Storeroom  : ${item.store}
+
+${extra}
+
+เหตุผล:
+  ${reason}
+
+ยอด stock คงเหลือหลังตัด: ${item.qty} ${item.unit}
+${'─'.repeat(44)}
+จัดทำโดย    : _______________________
+ผู้อนุมัติ   : _______________________
+วันที่อนุมัติ : _______________________
+
+[DRAFT — โปรดตรวจสอบและแก้ไขก่อน approve]`;
+  $('memo-card').style.display='block';
+  S.woLog.unshift({id,type:typeTH,item:item.name,code:item.code,store:item.store,qty,unit:item.unit,detail:v1,buyer:$('wo-v2')?.value?.trim()||'-',reason,date});
+  S.masterLog.unshift({id,type:'WRITEOFF',item:item.name,qty,detail:typeTH,date});
+  renderWOLog();populateItemSelects();clearWO();
+  toast('✓ Generate memo สำเร็จ — '+id);
+}
+
+function copyMemo(){
+  navigator.clipboard.writeText($('memo-content').textContent).then(()=>confirm('copy-memo-ok'));
+}
+
+function renderWOLog(){
+  const tb=$('wo-log');
+  if(!S.woLog.length){tb.innerHTML='<tr><td colspan="8" style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีรายการ</td></tr>';return;}
+  tb.innerHTML=S.woLog.map(r=>{
+    const c=r.type.includes('Sale')?'badge-green':r.type.includes('Donate')?'badge-purple':'badge-coral';
+    const buyer = r.buyer && r.buyer!=='-' ? esc(r.buyer) : '<span style="color:var(--text3)">—</span>';
+    const reason = r.reason ? `<span title="${esc(r.reason)}" style="max-width:180px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle">${esc(r.reason)}</span>` : '<span style="color:var(--text3)">—</span>';
+    return`<tr>
+      <td><span class="badge ${c}">${esc(r.id)}</span></td>
+      <td>${esc(r.type)}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.item)}">${esc(r.item)}</td>
+      <td class="qty-neg" style="text-align:right">-${r.qty}</td>
+      <td style="font-size:11px;color:var(--text2)">${esc(r.detail||'-')}</td>
+      <td style="font-size:11px">${buyer}</td>
+      <td style="font-size:11px">${reason}</td>
+      <td style="font-size:11px;color:var(--text3)">${r.date}</td>
+    </tr>`;
+  }).join('');
+}
+
+function clearWO(){
+  ['wo-qty','wo-reason','wo-v1','wo-v2'].forEach(id=>$(id).value='');
+  resetSD('sd-wo-item');
+  $('wo-date').value=today();
+}
+
+// ── REPORT ──
+function updateStats(){
+  const bal = Object.values(S.balance);
+  const lowCount = bal.filter(b=>b.qty===0||(b.qty<10)).length;
+  const grQty = S.grLog.reduce((a,r)=>a+r.qty,0);
+  const issueQty = S.txnLog.reduce((a,r)=>a+r.qty,0);
+  const woQty = S.woLog.reduce((a,r)=>a+r.qty,0);
+
+  $('s-items').textContent = bal.length;
+  $('s-items-low').textContent = lowCount>0?`⚠ ${lowCount} items ใกล้หมด`:'✓ ทุก item พร้อมใช้';
+  $('s-items-low').style.color = lowCount>0?'var(--amber)':'var(--teal)';
+
+  $('s-gr').textContent = S.grLog.length;
+  $('s-gr-qty').textContent = grQty>0?`+${grQty} units รับเข้า`:'ยังไม่มีรายการ';
+  $('s-gr-qty').style.color = 'var(--text3)';
+
+  $('s-issue').textContent = S.txnLog.length;
+  $('s-issue-qty').textContent = issueQty>0?`${issueQty} units เบิก/โอน`:'ยังไม่มีรายการ';
+  $('s-issue-qty').style.color = 'var(--text3)';
+
+  $('s-wo').textContent = S.woLog.length;
+  $('s-wo-qty').textContent = woQty>0?`${woQty} units ตัดออก`:'ยังไม่มีรายการ';
+  $('s-wo-qty').style.color = woQty>0?'var(--coral)':'var(--text3)';
+
+  // Activity bars
+  const types=[
+    {label:'GR',count:S.grLog.length,color:'var(--blue)'},
+    {label:'Issue',count:S.txnLog.filter(r=>r.type==='ISSUE').length,color:'var(--teal)'},
+    {label:'Transfer',count:S.txnLog.filter(r=>r.type==='TRANSFER').length,color:'var(--amber)'},
+    {label:'Write-off',count:S.woLog.length,color:'var(--coral)'},
+  ];
+  const maxCount = Math.max(...types.map(t=>t.count),1);
+  $('activity-bars').innerHTML = types.map(t=>`
+    <div class="activity-bar-row">
+      <div class="activity-bar-label">${t.label}</div>
+      <div class="activity-bar-track">
+        <div class="activity-bar-fill" style="width:${(t.count/maxCount*100).toFixed(1)}%;background:${t.color}"></div>
+      </div>
+      <div class="activity-bar-count">${t.count}</div>
+    </div>`).join('');
+
+  // Top issued items
+  const itemOut = {};
+  S.txnLog.filter(r=>r.type==='ISSUE').forEach(r=>{
+    itemOut[r.item]=(itemOut[r.item]||0)+r.qty;
+  });
+  const topItems = Object.entries(itemOut).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  $('top-items').innerHTML = topItems.length
+    ? topItems.map(([name,qty],i)=>`
+        <div class="top-item-row">
+          <div class="top-item-rank">#${i+1}</div>
+          <div class="top-item-name" title="${esc(name)}">${esc(name)}</div>
+          <div class="top-item-qty">-${qty}</div>
+        </div>`).join('')
+    : '<div style="color:var(--text3);font-size:12px;padding:8px 0">ยังไม่มีการเบิก</div>';
+}
+
+function renderReport(){
+  const month=$('filter-month').value;
+  const type=$('filter-type').value;
+  const search=($('filter-search').value||'').toLowerCase().trim();
+
+  let logs=S.masterLog.filter(r=>{
+    const mOk=month==='all'||r.date.slice(0,7)===month;
+    const tOk=type==='all'||r.type===type;
+    const sOk=!search||r.item.toLowerCase().includes(search)||r.id.toLowerCase().includes(search)||(r.detail||'').toLowerCase().includes(search);
+    return mOk&&tOk&&sOk;
+  });
+
+  const cm={GR:'badge-blue',ISSUE:'badge-teal',TRANSFER:'badge-blue',WRITEOFF:'badge-coral'};
+  const typeTH={GR:'รับของ',ISSUE:'เบิก',TRANSFER:'โอน',WRITEOFF:'Write-off'};
+  const tb=$('r-txn');
+  tb.innerHTML=logs.length
+    ?logs.map(r=>`<tr>
+        <td><span class="badge ${cm[r.type]||'badge-gray'}" style="font-size:10px">${esc(r.id)}</span></td>
+        <td><span class="badge ${cm[r.type]||'badge-gray'}">${typeTH[r.type]||r.type}</span></td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.item)}">${esc(r.item)}</td>
+        <td class="num">${r.qty}</td>
+        <td style="color:var(--text2);font-size:11px">${esc(r.detail||'—')}</td>
+        <td style="color:var(--text3);font-size:11px;white-space:nowrap">${r.date}</td>
+      </tr>`).join('')
+    :'<tr><td colspan="6" style="color:var(--text3);text-align:center;padding:20px">ไม่มีรายการ</td></tr>';
+  $('r-txn-count').textContent = logs.length?`แสดง ${logs.length} รายการ`:'';
+
+  // Balance table
+  const storeFilter=$('filter-store').value;
+  const stockFilter=$('filter-stock').value;
+  let bal=Object.values(S.balance).filter(b=>{
+    const sOk=storeFilter==='all'||b.store===storeFilter;
+    const lvOk=stockFilter==='all'||(stockFilter==='low'&&(b.qty===0||b.qty<10))||(stockFilter==='ok'&&b.qty>=10);
+    return sOk&&lvOk;
+  }).sort((a,b)=>a.name.localeCompare(b.name,'th'));
+
+  const bb=$('r-bal');
+  bb.innerHTML=bal.length
+    ?bal.map(b=>{
+        const isZero=b.qty===0;
+        const isLow=!isZero&&b.qty<10;
+        const pillCls=isZero?'pill-zero':isLow?'pill-low':'pill-ok';
+        const pillTxt=isZero?'หมด':isLow?'ใกล้หมด':'พร้อม';
+        const qtyColor=isZero?'qty-zero':isLow?'qty-neg':'qty-pos';
+        const moved=b.in>0||b.out>0;
+        return`<tr ${moved?'style="background:rgba(255,255,255,.012)"':''}>
+          <td style="color:var(--text3);font-size:10px;white-space:nowrap">${esc(b.code)}</td>
+          <td style="font-weight:${moved?'500':'400'}">${esc(b.name)}</td>
+          <td style="font-size:11px;color:var(--text2)">${esc(b.store)}</td>
+          <td class="num" style="color:var(--text3)">${b.opening}</td>
+          <td class="num qty-pos">${b.in>0?'+'+b.in:'—'}</td>
+          <td class="num qty-neg">${b.out>0?'-'+b.out:'—'}</td>
+          <td class="num ${qtyColor}" style="font-weight:600">${b.qty}</td>
+          <td style="color:var(--text3);font-size:11px">${esc(b.unit)}</td>
+          <td><span class="status-pill ${pillCls}">${pillTxt}</span></td>
+        </tr>`;
+      }).join('')
+    :'<tr><td colspan="9" style="color:var(--text3);text-align:center;padding:20px">ไม่มีข้อมูล</td></tr>';
+  $('r-bal-count').textContent = bal.length?`แสดง ${bal.length} items`:'';
+
+  // update month filter options
+  const months=[...new Set(S.masterLog.map(r=>r.date.slice(0,7)))].sort().reverse();
+  const sel=$('filter-month');const cur=sel.value;
+  sel.innerHTML='<option value="all">ทุกเดือน</option>'+months.map(m=>`<option value="${m}">${m}</option>`).join('');
+  sel.value=cur;
+}
+
+// ── EXPORT ──
+function getFilteredLogs(){
+  const month=$('filter-month').value, type=$('filter-type').value;
+  return S.masterLog.filter(r=>
+    (month==='all'||r.date.slice(0,7)===month) &&
+    (type==='all'||r.type===type)
+  );
+}
+
+function exportTxnCSV(){
+  const logs = getFilteredLogs();
+  if(!logs.length){toast('⚠ ไม่มีรายการให้ export');return;}
+  const header = ['TXN ID','Type','Item','Qty','Detail','Date'];
+  const rows = logs.map(r=>[r.id, r.type, r.item, r.qty, r.detail||'', r.date]);
+  const csv = [header, ...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  dlBlob(blob, `Transaction_${today()}.csv`);
+  toast('✓ Export CSV สำเร็จ');
+}
+
+function exportTxnExcel(){
+  const logs = getFilteredLogs();
+  if(!logs.length){toast('⚠ ไม่มีรายการให้ export');return;}
+
+  // Build XLSX via SheetJS-compatible XML approach (no external lib needed)
+  const month = $('filter-month').value;
+  const period = month==='all'?'All':month;
+
+  const txnRows = [
+    ['TXN ID','Type','Item','Qty','Detail','Date'],
+    ...logs.map(r=>[r.id, r.type, r.item, r.qty, r.detail||'', r.date])
+  ];
+
+  const balRows = [
+    ['MAT Code','Item Name','Current Qty','Unit','Storeroom','Opening Balance','In (GR)','Out','Avg Cost (THB)'],
+    ...Object.values(S.balance).map(b=>[b.code, b.name, b.qty, b.unit, b.store, b.opening, b.in, b.out, b.avg_cost||0])
+  ];
+
+  const wb = buildXLSX({
+    'Transactions': txnRows,
+    'Balance': balRows
+  });
+
+  dlBlob(wb, `Storeroom_Report_${today()}.xlsx`);
+  toast('✓ Export Excel สำเร็จ (2 sheets)');
+}
+
+function exportBalanceExcel(){
+  const balRows = [
+    ['MAT Code','Item Name','Current Qty','Unit','Storeroom','Opening Balance','In (GR)','Out','Avg Cost (THB)'],
+    ...Object.values(S.balance).map(b=>[b.code, b.name, b.qty, b.unit, b.store, b.opening, b.in, b.out, b.avg_cost||0])
+  ];
+  const wb = buildXLSX({'Balance_MAY26': balRows});
+  dlBlob(wb, `Balance_${today()}.xlsx`);
+  toast('✓ Export Balance Excel สำเร็จ');
+}
+
+function dlBlob(blob, filename){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+
+// Minimal XLSX builder (SpreadsheetML / Office Open XML)
+function buildXLSX(sheets){
+  // sheets = { sheetName: [[row],[row],...] }
+  const xmlEsc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  function cellRef(r,c){
+    let col='';let cc=c+1;
+    while(cc>0){col=String.fromCharCode(65+(cc-1)%26)+col;cc=Math.floor((cc-1)/26);}
+    return col+(r+1);
+  }
+
+  function sheetXML(rows){
+    const xmlRows = rows.map((row,ri)=>{
+      const cells = row.map((val,ci)=>{
+        const ref=cellRef(ri,ci);
+        if(typeof val==='number'){
+          return `<c r="${ref}" t="n"><v>${val}</v></c>`;
+        }
+        return `<c r="${ref}" t="inlineStr"><is><t>${xmlEsc(val)}</t></is></c>`;
+      }).join('');
+      return `<row r="${ri+1}">${cells}</row>`;
+    }).join('');
+    return `<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${xmlRows}</sheetData></worksheet>`;
+  }
+
+  const sheetNames = Object.keys(sheets);
+  const sheetXMLs = sheetNames.map(n=>sheetXML(sheets[n]));
+
+  // workbook.xml
+  const wbXML = `<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheetNames.map((n,i)=>`<sheet name="${xmlEsc(n)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`;
+
+  // workbook rels
+  const wbRels = `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheetNames.map((n,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}</Relationships>`;
+
+  // [Content_Types].xml
+  const ct = `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>${sheetNames.map((n,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`;
+
+  // _rels/.rels
+  const rootRels = `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+
+  // Build ZIP manually using JSZip-free approach — encode as data URI
+  // Use a simple zip builder
+  const files = {
+    '[Content_Types].xml': ct,
+    '_rels/.rels': rootRels,
+    'xl/workbook.xml': wbXML,
+    'xl/_rels/workbook.xml.rels': wbRels,
+  };
+  sheetNames.forEach((n,i)=>{ files[`xl/worksheets/sheet${i+1}.xml`] = sheetXMLs[i]; });
+
+  return buildZip(files);
+}
+
+// Tiny synchronous ZIP builder (store only, no compression)
+function buildZip(files){
+  const entries=[];
+  const enc = s => new TextEncoder().encode(s);
+  const u32le = n => [n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255];
+  const u16le = n => [n&255,(n>>8)&255];
+  const crc32tbl = (()=>{const t=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let j=0;j<8;j++)c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);t[i]=c;}return t;})();
+  const crc32 = d=>{let c=0xFFFFFFFF;for(let i=0;i<d.length;i++)c=crc32tbl[(c^d[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0;};
+
+  const localHeaders=[];
+  let offset=0;
+  const allBytes=[];
+
+  for(const [name,content] of Object.entries(files)){
+    const nameBytes=enc(name);
+    const dataBytes=enc(content);
+    const crc=crc32(dataBytes);
+    const lh=[0x50,0x4B,0x03,0x04,20,0,...u16le(0),...u16le(8),...u16le(0),...u16le(0),
+      ...u32le(crc),...u32le(dataBytes.length),...u32le(dataBytes.length),...u16le(nameBytes.length),...u16le(0),
+      ...nameBytes,...dataBytes];
+    localHeaders.push({name:nameBytes,crc,size:dataBytes.length,offset});
+    lh.forEach(b=>allBytes.push(b));
+    offset+=lh.length;
+  }
+
+  const cdStart=offset;
+  for(const e of localHeaders){
+    const cd=[0x50,0x4B,0x01,0x02,20,0,20,0,...u16le(0),...u16le(8),...u16le(0),...u16le(0),
+      ...u32le(e.crc),...u32le(e.size),...u32le(e.size),...u16le(e.name.length),...u16le(0),...u16le(0),...u16le(0),...u16le(0),
+      ...u32le(0),...u32le(e.offset),...e.name];
+    cd.forEach(b=>allBytes.push(b));
+  }
+
+  const cdSize=allBytes.length-cdStart;
+  const eocd=[0x50,0x4B,0x05,0x06,0,0,0,0,...u16le(localHeaders.length),...u16le(localHeaders.length),
+    ...u32le(cdSize),...u32le(cdStart),...u16le(0)];
+  eocd.forEach(b=>allBytes.push(b));
+
+  return new Blob([new Uint8Array(allBytes)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
+// ── AUTO SAVE / LOAD (localStorage) ──
+const SAVE_KEY = 'storeroom_state_v1';
+
+function saveState(){
+  try{
+    const snapshot = {
+      grLog: S.grLog,
+      txnLog: S.txnLog,
+      woLog: S.woLog,
+      masterLog: S.masterLog,
+      ctr: S.ctr,
+      // save balance deltas for existing opening items
+      balanceDelta: Object.fromEntries(
+        Object.entries(S.balance)
+          .filter(([k])=> OPENING_KEYS.has(k))
+          .map(([k,v])=>[k,{qty:v.qty, in:v.in, out:v.out, avg_cost:v.avg_cost||0}])
+      ),
+      // save new items created from GR (not in opening balance) in full
+      newItems: Object.fromEntries(
+        Object.entries(S.balance)
+          .filter(([k])=> !OPENING_KEYS.has(k))
+          .map(([k,v])=>[k,{...v}])
+      ),
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(snapshot));
+  }catch(e){ console.warn('Save failed', e); }
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const snap = JSON.parse(raw);
+    // restore logs
+    S.grLog = snap.grLog || [];
+    S.txnLog = snap.txnLog || [];
+    S.woLog = snap.woLog || [];
+    S.masterLog = snap.masterLog || [];
+    S.ctr = snap.ctr || 1000;
+    // restore balance deltas on top of opening
+    if(snap.balanceDelta){
+      Object.entries(snap.balanceDelta).forEach(([k,d])=>{
+        if(S.balance[k]){
+          S.balance[k].qty      = d.qty;
+          S.balance[k].in       = d.in;
+          S.balance[k].out      = d.out;
+          S.balance[k].avg_cost = d.avg_cost || S.balance[k].avg_cost;
+        }
+      });
+    }
+    // restore new items from GR that aren't in opening balance
+    if(snap.newItems){
+      Object.entries(snap.newItems).forEach(([k,v])=>{
+        S.balance[k] = {...v};
+      });
+    }
+    return snap.savedAt;
+  }catch(e){ console.warn('Load failed', e); return false; }
+}
+
+function clearSavedState(){
+  if(!confirm('ล้างข้อมูลที่บันทึกไว้ทั้งหมด และ reset กลับเป็น Opening Balance MAY-26 ใช่ไหมครับ?')) return;
+  localStorage.removeItem(SAVE_KEY);
+  location.reload();
+}
+
+// patch save into every write operation
+const _origSubmitGR = submitGR;
+submitGR = function(){ _origSubmitGR(); saveState(); };
+const _origSubmitTxn = submitTxn;
+submitTxn = function(){ _origSubmitTxn(); saveState(); };
+const _origGenerateMemo = generateMemo;
+generateMemo = function(){ _origGenerateMemo(); saveState(); };
+
+// INIT
+$('gr-date').value=today();
+$('txn-date').value=today();
+$('wo-date').value=today();
+initSearchDropdowns();
+addGRRow(); addGRRow(); addGRRow();
+addIssueRow(); addIssueRow(); addIssueRow();
+
+// Load saved state on startup
+const savedAt = loadState();
+if(savedAt){
+  const dt = new Date(savedAt).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  // show restore indicator in topbar
+  const topRight = $('clock');
+  const indicator = document.createElement('span');
+  indicator.style.cssText='margin-left:12px;color:var(--teal);font-size:11px;cursor:pointer';
+  indicator.title='คลิกเพื่อล้างข้อมูลที่บันทึกไว้';
+  indicator.textContent='💾 โหลดจาก '+dt;
+  indicator.onclick = clearSavedState;
+  topRight.parentNode.insertBefore(indicator, topRight.nextSibling);
+  // re-render all logs
+  renderGRLog();
+  renderTxnLog();
+  renderWOLog();
+  populateItemSelects();
+} else {
+  // fresh start — show hint
+  const topRight = $('clock');
+  const hint = document.createElement('span');
+  hint.style.cssText='margin-left:12px;color:var(--text3);font-size:11px';
+  hint.textContent='💾 Auto-save เปิดใช้งานแล้ว';
+  topRight.parentNode.insertBefore(hint, topRight.nextSibling);
+}
+
+// ── bind all event listeners (avoid inline onchange/onclick for CSP compatibility) ──
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Dashboard filter + buttons
+  const dfs = $('dash-filter-store');
+  if(dfs) dfs.addEventListener('change', ()=>renderDashboard());
+  const drb = $('dash-refresh-btn');
+  if(drb) drb.addEventListener('click', ()=>renderDashboard());
+  const deb = $('dash-export-btn');
+  if(deb) deb.addEventListener('click', ()=>exportDashboardSnapshot());
+
+  // Stock balance filters
+  const sbSearch = $('sb-search');
+  if(sbSearch) sbSearch.addEventListener('input', ()=>{ SB.page=1; renderStockBalance(); });
+  ['sb-filter-store','sb-filter-status','sb-sort'].forEach(id=>{
+    const el=$(id);
+    if(el) el.addEventListener('change', ()=>{ SB.page=1; renderStockBalance(); });
+  });
+
+  // Init Request tab
+  addReqRow();
+  loadConfig();
+  renderReqQueue();
+  renderReqHistory();
+  populateReqDatalist();
+  const d = new Date(); d.setDate(d.getDate()+3);
+  if($('req-needed-date')) $('req-needed-date').value = d.toISOString().slice(0,10);
+});
+
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+const CFG_KEY = 'storeroom_cfg_v1';
+let CFG = { flowUrl:'', approverName:'', approverEmail:'', siteName:'', syncUrl:'' };
+
+function loadConfig(){
+  try{ const r=localStorage.getItem(CFG_KEY); if(r) CFG={...CFG,...JSON.parse(r)}; }catch(e){}
+  const latestUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/3f686149ad9646fa9d44a1acd018e65a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5GJtnPEkm6ouPVqp17Ow6ZEivomQdGnRHKpkTSjbYT8';
+  CFG.flowUrl=latestUrl;
+  // Pre-fill sync URL if not set
+  if(!CFG.syncUrl){
+    CFG.syncUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/15bc5f6d792b4a069a49719a2f85a311/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=2srasvTIZOxMT8M-FxI6iIWjUj11z0R3jCra4dSfCDg';
+  }
+  saveConfigData();
+  if($('cfg-flow-url')) $('cfg-flow-url').value=CFG.flowUrl||'';
+  if($('cfg-approver-name')) $('cfg-approver-name').value=CFG.approverName||'';
+  if($('cfg-approver-email')) $('cfg-approver-email').value=CFG.approverEmail||'';
+  if($('cfg-site-name')) $('cfg-site-name').value=CFG.siteName||'';
+  if($('cfg-sync-url')) $('cfg-sync-url').value=CFG.syncUrl||'';
+}
+
+function saveConfigData(){
+  CFG.flowUrl=($('cfg-flow-url')||{}).value||CFG.flowUrl;
+  CFG.approverName=($('cfg-approver-name')||{}).value||CFG.approverName;
+  CFG.approverEmail=($('cfg-approver-email')||{}).value||CFG.approverEmail;
+  CFG.siteName=($('cfg-site-name')||{}).value||CFG.siteName;
+  CFG.syncUrl=($('cfg-sync-url')||{}).value||CFG.syncUrl;
+  localStorage.setItem(CFG_KEY,JSON.stringify(CFG));
+}
+
+function saveConfig(){
+  saveConfigData();
+  const st=$('cfg-status');
+  st.style.color='var(--teal)'; st.textContent='✅ บันทึกแล้ว';
+  setTimeout(()=>st.textContent='',2500);
+  toast('บันทึก Config เรียบร้อยแล้วครับ');
+}
+
+async function syncToSharePoint(){
+  saveConfigData();
+  const st=$('sync-status');
+  if(!CFG.syncUrl){ st.style.color='var(--coral)'; st.textContent='⚠️ กรุณาใส่ Sync Flow URL ก่อน'; return; }
+
+  st.style.color='var(--text3)'; st.textContent='⏳ กำลัง Sync...';
+
+  // Build items array from S.balance
+  const now=new Date().toLocaleString('th-TH');
+  const items=Object.entries(S.balance).map(([k,b])=>{
+    const qty=b.qty||0;
+    const status=qty===0?'Zero':qty<=2?'Low':'OK';
+    return {
+      title_key: k,
+      mat_code: b.code||'',
+      item_name: b.name||'',
+      category: b.category||'',
+      qty: qty,
+      unit: b.unit||'',
+      storeroom: b.store||'',
+      avg_cost: b.avg_cost||0,
+      status: status,
+      last_updated: now
+    };
+  });
+
+  try{
+    await fetch(CFG.syncUrl,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({items}),
+      mode:'no-cors'
+    });
+    st.style.color='var(--teal)';
+    st.textContent=`✅ Sync สำเร็จ! ${items.length} รายการ → SharePoint`;
+    toast(`🔄 Sync ${items.length} รายการ ไปยัง SharePoint แล้วครับ`);
+  }catch(e){
+    st.style.color='var(--coral)';
+    st.textContent='❌ Sync ไม่ได้ — เช็ค Flow URL';
+    console.error('Sync error:',e);
+  }
+}
+
+async function testNotification(){
+  saveConfigData();
+  const st=$('cfg-status');
+  if(!CFG.flowUrl){ st.style.color='var(--coral)'; st.textContent='⚠️ กรุณาใส่ Flow URL ก่อน'; return; }
+  st.style.color='var(--text3)'; st.textContent='⏳ กำลังทดสอบ...';
+  const ok=await sendToFlowURL({
+    request_id:'TEST-'+Date.now(),
+    requester_name:'ทดสอบระบบ',
+    department:'IT/System',
+    storeroom:CFG.siteName||'BNS1-TIMCO',
+    items:[{mat_code:'TEST-001',item_name:'Test Item',qty:1,unit:'UNI',stock_remaining:99}],
+    needed_date:today(),
+    note:'นี่คือการทดสอบ Notification จาก Storeroom App',
+    submitted_at:new Date().toLocaleString('th-TH'),
+    is_test:true
+  });
+  if(ok){ st.style.color='var(--teal)'; st.textContent='✅ ส่ง Test สำเร็จ! เช็ค Teams ได้เลย'; }
+  else { st.style.color='var(--coral)'; st.textContent='❌ ส่งไม่ได้ — เช็ค Flow URL อีกครั้ง'; }
+}
+
+// ══════════════════════════════════════════
+// REQUEST FORM
+// ══════════════════════════════════════════
+const REQ_KEY = 'storeroom_req_v1';
+let REQ = { queue:[], history:[] };
+function loadReq(){ try{ const r=localStorage.getItem(REQ_KEY); if(r) REQ={...REQ,...JSON.parse(r)}; }catch(e){} }
+function saveReq(){ localStorage.setItem(REQ_KEY,JSON.stringify(REQ)); updateReqBadge(); }
+loadReq();
+
+function updateReqBadge(){
+  const badge=$('req-badge');
+  const pending=(REQ.queue||[]).filter(r=>r.status==='pending').length;
+  if(badge){ badge.style.display=pending>0?'inline':'none'; badge.textContent=pending; }
+}
+
+function populateReqDatalist(){
+  const dl=$('req-items-datalist');
+  if(!dl) return;
+  dl.innerHTML=Object.entries(S.balance)
+    .filter(([,b])=>b.qty>0)
+    .sort((a,b)=>a[1].code.localeCompare(b[1].code))
+    .map(([k,b])=>`<option value="${esc(b.code)} — ${esc(b.name)} [${esc(b.store)}]" data-key="${esc(k)}"></option>`)
+    .join('');
+}
+
+function addReqRow(){
+  const tbody=$('req-rows');
+  if(!tbody) return;
+  const idx=tbody.rows.length;
+  const tr=document.createElement('tr');
+  tr.id='req-row-'+idx;
+  tr.innerHTML=`
+    <td style="padding:4px 6px">
+      <input list="req-items-datalist" id="req-item-${idx}" placeholder="พิมพ์ MAT Code หรือชื่อรายการ..."
+        style="width:100%;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px"
+        oninput="onReqItemInput(${idx})">
+    </td>
+    <td style="padding:4px 6px">
+      <input type="number" id="req-qty-${idx}" min="1" placeholder="0"
+        style="width:80px;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px"
+        oninput="onReqItemInput(${idx})">
+    </td>
+    <td style="padding:4px 6px;font-size:11px" id="req-stock-${idx}"><span style="color:var(--text3)">—</span></td>
+    <td style="padding:4px 6px;text-align:center">
+      <span onclick="removeReqRow(${idx})" style="cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px" title="ลบ">✕</span>
+    </td>`;
+  tbody.appendChild(tr);
+}
+
+function removeReqRow(idx){ const tr=$('req-row-'+idx); if(tr) tr.remove(); }
+
+function onReqItemInput(idx){
+  const inp=$('req-item-'+idx);
+  const stockEl=$('req-stock-'+idx);
+  if(!inp||!stockEl) return;
+  const val=inp.value;
+  const match=Object.values(S.balance).find(b=>{
+    const label=`${b.code} — ${b.name} [${b.store}]`;
+    return label===val||b.code===val.split(' ')[0];
+  });
+  if(match){
+    const color=match.qty===0?'var(--coral)':match.qty<=2?'var(--amber)':'var(--teal)';
+    stockEl.innerHTML=`<span style="color:${color};font-weight:600">${match.qty} ${match.unit}</span>`;
+  } else {
+    stockEl.innerHTML='<span style="color:var(--text3)">—</span>';
+  }
+}
+
+function clearReqForm(){
+  if($('req-name')) $('req-name').value='';
+  if($('req-dept')) $('req-dept').value='';
+  if($('req-note')) $('req-note').value='';
+  if($('req-storeroom')) $('req-storeroom').value='';
+  const d=new Date(); d.setDate(d.getDate()+3);
+  if($('req-needed-date')) $('req-needed-date').value=d.toISOString().slice(0,10);
+  if($('req-rows')) $('req-rows').innerHTML='';
+  addReqRow();
+  if($('req-send-status')) $('req-send-status').textContent='';
+}
+
+async function submitRequest(){
+  const name=($('req-name')||{}).value?.trim()||'';
+  const dept=($('req-dept')||{}).value?.trim()||'';
+  const neededDate=($('req-needed-date')||{}).value||'';
+  const note=($('req-note')||{}).value?.trim()||'';
+  const storeroom=($('req-storeroom')||{}).value||CFG.siteName||'—';
+
+  if(!name||!dept||!neededDate){ toast('กรุณากรอก ชื่อผู้เบิก, แผนก และ วันที่ต้องการ ให้ครบก่อนครับ'); return; }
+
+  const items=[];
+  const rows=($('req-rows')||{}).rows||[];
+  for(let i=0;i<rows.length;i++){
+    const inp=rows[i].querySelector('input[list]');
+    const qtyInp=rows[i].querySelector('input[type=number]');
+    if(!inp||!qtyInp) continue;
+    const val=inp.value.trim();
+    const qty=parseFloat(qtyInp.value)||0;
+    if(!val||qty<=0) continue;
+    const match=Object.values(S.balance).find(b=>{
+      const label=`${b.code} — ${b.name} [${b.store}]`;
+      return label===val||b.code===val.split(' ')[0];
+    });
+    if(match){
+      const key=Object.keys(S.balance).find(k=>S.balance[k]===match)||'';
+      items.push({mat_code:match.code,item_name:match.name,qty,unit:match.unit,stock_remaining:match.qty,key});
+    } else if(val){
+      items.push({mat_code:'?',item_name:val,qty,unit:'',stock_remaining:'?',key:''});
+    }
+  }
+
+  if(items.length===0){ toast('กรุณาเพิ่มรายการที่ต้องการขอเบิกอย่างน้อย 1 รายการครับ'); return; }
+
+  const submittedAt=new Date().toLocaleString('th-TH');
+  const reqId='REQ-'+Date.now();
+  const payload={request_id:reqId,requester_name:name,department:dept,storeroom,items,needed_date:neededDate,note:note||'—',submitted_at:submittedAt,is_test:false};
+
+  if(!REQ.queue) REQ.queue=[];
+  REQ.queue.unshift({...payload,status:'pending'});
+  saveReq();
+  renderReqQueue();
+  renderReqHistory();
+
+  const st=$('req-send-status');
+  st.style.color='var(--text3)'; st.textContent='⏳ กำลังส่ง Notification...';
+
+  if(CFG.flowUrl){
+    const ok=await sendToFlowURL(payload);
+    if(ok){ st.style.color='var(--teal)'; st.textContent='✅ ส่ง Request เรียบร้อย! แจ้ง Teams แล้วครับ'; toast('ส่ง Request สำเร็จ! 📤'); }
+    else { st.style.color='var(--amber)'; st.textContent='⚠️ บันทึกแล้ว แต่ส่ง Notification ไม่ได้ — แจ้ง Admin'; toast('บันทึก Request แล้ว แต่ Notification อาจไม่ได้รับ'); }
+  } else {
+    st.style.color='var(--amber)'; st.textContent='⚠️ บันทึกแล้ว แต่ยังไม่ได้ตั้งค่า Flow URL';
+  }
+  clearReqForm();
+}
+
+async function sendToFlowURL(payload){
+  try{
+    const itemsSummary=(payload.items||[]).map(it=>
+      `• ${it.mat_code} — ${it.item_name}: ${it.qty} ${it.unit||''} (Stock คงเหลือ: ${it.stock_remaining})`
+    ).join('\n');
+    const body={
+      request_id:payload.request_id||'',
+      requester_name:payload.requester_name||'',
+      department:payload.department||'',
+      storeroom:payload.storeroom||'',
+      items_summary:itemsSummary,
+      items_count:(payload.items||[]).length,
+      needed_date:payload.needed_date||'',
+      note:payload.note||'—',
+      submitted_at:payload.submitted_at||'',
+      is_test:payload.is_test||false
+    };
+    await fetch(CFG.flowUrl,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body),
+      mode:'no-cors'
+    });
+    return true;
+  }catch(e){ console.error('Flow error:',e); return false; }
+}
+
+function isUrgent(dateStr){
+  if(!dateStr) return false;
+  return (new Date(dateStr)-new Date())/(1000*60*60*24)<=2;
+}
+
+function renderReqQueue(){
+  const el=$('req-queue-list');
+  if(!el) return;
+  const pending=(REQ.queue||[]).filter(r=>r.status==='pending');
+  updateReqBadge();
+  if(pending.length===0){ el.innerHTML='<div style="color:var(--text3);text-align:center;padding:24px;font-size:12px">ยังไม่มี Request ที่รอดำเนินการ ✅</div>'; return; }
+  el.innerHTML=pending.map(r=>{
+    const urgColor=isUrgent(r.needed_date)?'var(--coral)':'var(--text2)';
+    const itemsHTML=(r.items||[]).map(it=>{
+      const sc=it.stock_remaining===0?'var(--coral)':it.stock_remaining<=2?'var(--amber)':'var(--teal)';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:11px;color:var(--text3);width:110px;flex-shrink:0">${esc(it.mat_code)}</span>
+        <span style="flex:1;font-size:12px">${esc(it.item_name)}</span>
+        <span style="font-weight:600;color:var(--blue)">${it.qty} ${it.unit||''}</span>
+        <span style="font-size:10px;color:${sc}">คงเหลือ: ${it.stock_remaining}</span>
+      </div>`;
+    }).join('');
+    return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+        <div>
+          <span style="font-weight:600;font-size:13px">${esc(r.requester_name)}</span>
+          <span style="color:var(--text3);font-size:11px;margin-left:6px">${esc(r.department)}</span>
+          <span class="badge badge-gray" style="margin-left:6px;font-size:10px">${esc(r.request_id||'')}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:${urgColor}">📅 ต้องการ: ${r.needed_date}${isUrgent(r.needed_date)?' ⚠️ ด่วน':''}</span>
+          <button class="btn btn-primary" style="font-size:11px;padding:5px 12px" onclick="approveRequest('${r.request_id}')">✅ ตัด Stock</button>
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px;color:var(--coral)" onclick="rejectRequest('${r.request_id}')">❌ ปฏิเสธ</button>
+        </div>
+      </div>
+      <div style="margin-bottom:8px">${itemsHTML}</div>
+      ${r.note&&r.note!=='—'?`<div style="font-size:11px;color:var(--text3)">💬 ${esc(r.note)}</div>`:''}
+      <div style="font-size:10px;color:var(--text3);margin-top:6px">ส่งเมื่อ: ${r.submitted_at} | Storeroom: ${esc(r.storeroom||'—')}</div>
+    </div>`;
+  }).join('');
+}
+
+async function approveRequest(reqId){
+  const req=(REQ.queue||[]).find(r=>r.request_id===reqId);
+  if(!req) return;
+  const ok=await modalConfirm(`ยืนยันตัด Stock สำหรับ Request ของ ${req.requester_name} (${req.department})?\n\nระบบจะ Issue รายการทั้งหมดในคำขอนี้ทันที`);
+  if(!ok) return;
+  let issued=0, skipped=0;
+  for(const it of (req.items||[])){
+    if(!it.key||!S.balance[it.key]){ skipped++; continue; }
+    const item=S.balance[it.key];
+    if(item.qty<it.qty){ skipped++; continue; }
+    const id=nid('TXN');
+    const rec={id,type:'ISSUE',code:item.code,item:item.name,unit:item.unit,store:item.store,qty:it.qty,from:item.store,to:req.department,by:req.requester_name,wo:req.request_id||'',date:today()};
+    item.qty-=it.qty; item.out+=it.qty;
+    S.txnLog.unshift(rec);
+    S.masterLog.unshift({id,type:'ISSUE',item:item.name,qty:it.qty,detail:'REQ:'+req.request_id,date:today()});
+    issued++;
+  }
+  req.status='approved'; req.approved_at=new Date().toLocaleString('th-TH');
+  saveReq(); saveState();
+  renderReqQueue(); renderReqHistory(); renderTxnLog(); populateItemSelects(); renderDashboard(); updateStats();
+  if(issued>0) toast(`✅ ตัด Stock สำเร็จ ${issued} รายการ${skipped>0?' ('+skipped+' รายการ stock ไม่พอ)':''}`);
+  else toast('⚠️ ไม่สามารถตัด Stock ได้ — กรุณาตรวจสอบ stock คงเหลือ');
+}
+
+async function rejectRequest(reqId){
+  const ok=await modalConfirm('ปฏิเสธ Request นี้ใช่ไหมครับ?','ยืนยันการปฏิเสธ',true);
+  if(!ok) return;
+  const req=(REQ.queue||[]).find(r=>r.request_id===reqId);
+  if(req){ req.status='rejected'; req.rejected_at=new Date().toLocaleString('th-TH'); }
+  saveReq(); renderReqQueue(); renderReqHistory();
+  toast('ปฏิเสธ Request แล้วครับ');
+}
+
+function renderReqHistory(){
+  const tb=$('req-history-body');
+  if(!tb) return;
+  const all=[...(REQ.queue||[])].sort((a,b)=>{
+    const order={pending:0,approved:1,rejected:2};
+    return (order[a.status]||0)-(order[b.status]||0)||(b.request_id||'').localeCompare(a.request_id||'');
+  });
+  if(all.length===0){ tb.innerHTML='<tr><td colspan="7" style="color:var(--text3);text-align:center;padding:20px">ยังไม่มีประวัติ</td></tr>'; return; }
+  tb.innerHTML=all.map(r=>{
+    const statusHTML=r.status==='pending'
+      ?'<span class="badge badge-amber">รอดำเนินการ</span>'
+      :r.status==='approved'
+      ?'<span class="badge badge-teal">ตัด Stock แล้ว</span>'
+      :'<span class="badge badge-coral">ปฏิเสธ</span>';
+    const itemNames=(r.items||[]).map(it=>`${it.mat_code} ×${it.qty}`).join(', ');
+    const totalQty=(r.items||[]).reduce((s,it)=>s+it.qty,0);
+    return `<tr>
+      <td><span style="font-size:10px;color:var(--text3)">${esc(r.request_id||'')}</span></td>
+      <td>${esc(r.requester_name)}<br><span style="font-size:10px;color:var(--text3)">${esc(r.department)}</span></td>
+      <td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(itemNames)}</td>
+      <td style="text-align:center">${totalQty}</td>
+      <td style="color:${isUrgent(r.needed_date)?'var(--coral)':'var(--text2)'}">${r.needed_date}</td>
+      <td>${statusHTML}</td>
+      <td style="font-size:10px;color:var(--text3)">${r.submitted_at||''}</td>
+    </tr>`;
+  }).join('');
+}
+
+function clearReqHistory(){
+  if(!confirm('ล้างประวัติ Request ทั้งหมดใช่ไหมครับ?')) return;
+  REQ={queue:[],history:[]};
+  saveReq(); renderReqQueue(); renderReqHistory();
+  toast('ล้างประวัติ Request แล้วครับ');
+}
+</script>
+</body>
+</html>
