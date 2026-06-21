@@ -3006,14 +3006,13 @@ let CFG = { flowUrl:'', approverName:'', approverEmail:'', siteName:'', syncUrl:
 
 function loadConfig(){
   try{ const r=localStorage.getItem(CFG_KEY); if(r) CFG={...CFG,...JSON.parse(r)}; }catch(e){}
-  // Flow A — Notification (Request submit)
-  CFG.flowUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ecf4c154344d4d7d8d82bb834ffbd843/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=d8IXMifjZape_a-3c-3y1SCyD2YFvYZRer87UTxcY74';
-  // Flow A — Sync Stock Balance
-  CFG.syncUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f8f37f0ae84f4f1197e576b9b085b795/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=wTOAMrgpWwap8GHUNj14x-pdsvCGFuqAtMvJ90DFMJs';
-  // Flow C — Read Requests from SharePoint
-  CFG.readRequestsUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/882136f2e4a84fe99a57eb423a55b58d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=8ZqYKmS8FI6aRKIoTPugLtOGLQlzXuhXeQSumxIY6_I';
-  // Flow D — Update Request Status
-  CFG.updateStatusUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/7a7a434e406646f7a8e770c259faa42c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=apmrxhFDhXQeMmCsI57dz3Ov6UI7kJ-aqQ7KZLW0wIY';
+
+  // Default URLs — จะถูก override ด้วย Config ที่บันทึกไว้ใน localStorage
+  if(!CFG.flowUrl) CFG.flowUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ecf4c154344d4d7d8d82bb834ffbd843/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=d8IXMifjZape_a-3c-3y1SCyD2YFvYZRer87UTxcY74';
+  if(!CFG.syncUrl) CFG.syncUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f8f37f0ae84f4f1197e576b9b085b795/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=wTOAMrgpWwap8GHUNj14x-pdsvCGFuqAtMvJ90DFMJs';
+  if(!CFG.readRequestsUrl) CFG.readRequestsUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/882136f2e4a84fe99a57eb423a55b58d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=8ZqYKmS8FI6aRKIoTPugLtOGLQlzXuhXeQSumxIY6_I';
+  if(!CFG.updateStatusUrl) CFG.updateStatusUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/7a7a434e406646f7a8e770c259faa42c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=apmrxhFDhXQeMmCsI57dz3Ov6UI7kJ-aqQ7KZLW0wIY';
+
   saveConfigData();
   if($('cfg-flow-url')) $('cfg-flow-url').value=CFG.flowUrl||'';
   if($('cfg-approver-name')) $('cfg-approver-name').value=CFG.approverName||'';
