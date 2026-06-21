@@ -3102,10 +3102,13 @@ async function updateSPRequestStatus(spItemId, status, note){
   }catch(e){ console.error('Update status error:',e); }
 }
 
+let _syncLock=false;
 async function syncToSharePoint(){
+  if(_syncLock) return;
+  _syncLock=true;
   saveConfigData();
   const st=$('sync-status');
-  if(!CFG.syncUrl){ st.style.color='var(--coral)'; st.textContent='⚠️ กรุณาใส่ Sync Flow URL ก่อน'; return; }
+  if(!CFG.syncUrl){ st.style.color='var(--coral)'; st.textContent='⚠️ กรุณาใส่ Sync Flow URL ก่อน'; _syncLock=false; return; }
 
   st.style.color='var(--text3)'; st.textContent='⏳ กำลัง Sync...';
 
@@ -3139,7 +3142,7 @@ async function syncToSharePoint(){
     st.style.color='var(--coral)';
     st.textContent='❌ Sync ไม่ได้ — เช็ค Flow URL';
     console.error('Sync error:',e);
-  }
+  } finally { _syncLock=false; }
 }
 
 async function testNotification(){
