@@ -997,17 +997,17 @@ const IS_USER_MODE = new URLSearchParams(location.search).get('mode') === 'reque
 
 function applyUserMode(){
   if(!IS_USER_MODE) return;
-  // ซ่อน tab ทั้งหมดยกเว้น request
-  document.querySelectorAll('.tab').forEach(el=>{
-    const fn=el.getAttribute('onclick')||'';
-    if(!fn.includes("'request'")) el.style.display='none';
-  });
+  // ซ่อน tab ที่ user ไม่ควรเห็น
+  // order: 0=gr, 1=issue, 2=writeoff, 3=report, 4=dashboard, 5=request, 6=config
+  const ALLOWED = new Set([3, 4, 5]); // report, dashboard, request
+  const tabs = document.querySelectorAll('.nav .tab');
+  tabs.forEach((el, i) => { if(!ALLOWED.has(i)) el.style.display = 'none'; });
   // ซ่อน admin queue (เฉพาะ Jack ต้องเห็น)
-  const queueCard=$('req-pending-card');
-  if(queueCard) queueCard.style.display='none';
+  const queueCard = $('req-pending-card');
+  if(queueCard) queueCard.style.display = 'none';
   // ปรับ subtitle
-  const sub=document.querySelector('.topbar-sub');
-  if(sub) sub.textContent='แบบฟอร์มขอเบิกของ — Banpu NEXT';
+  const sub = document.querySelector('.topbar-sub');
+  if(sub) sub.textContent = 'แบบฟอร์มขอเบิกของ — Banpu NEXT';
 }
 
 // CLOCK
