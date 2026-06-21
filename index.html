@@ -3245,7 +3245,10 @@ function clearReqForm(){
   if($('req-send-status')) $('req-send-status').textContent='';
 }
 
+let _reqLock=false;
 async function submitRequest(){
+  if(_reqLock) return;
+  _reqLock=true;
   const name=($('req-name')||{}).value?.trim()||'';
   const dept=($('req-dept')||{}).value?.trim()||'';
   const neededDate=($('req-needed-date')||{}).value||'';
@@ -3298,6 +3301,7 @@ async function submitRequest(){
     st.style.color='var(--amber)'; st.textContent='⚠️ บันทึกแล้ว แต่ยังไม่ได้ตั้งค่า Flow URL';
   }
   clearReqForm();
+  _reqLock=false;
 }
 
 async function sendToFlowURL(payload){
