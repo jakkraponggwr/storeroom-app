@@ -212,13 +212,13 @@ textarea{resize:vertical;min-height:64px;line-height:1.6}
 
 <!-- NAV -->
 <div class="nav">
-  <div class="tab active" onclick="switchTab('gr')"><span class="tab-dot" style="background:var(--blue)"></span>รับของ (GR)</div>
-  <div class="tab" onclick="switchTab('issue')"><span class="tab-dot" style="background:var(--teal)"></span>Issue / Transfer</div>
-  <div class="tab" onclick="switchTab('writeoff')"><span class="tab-dot" style="background:var(--coral)"></span>Write-off</div>
-  <div class="tab" onclick="switchTab('report')"><span class="tab-dot" style="background:var(--purple)"></span>Report</div>
-  <div class="tab" onclick="switchTab('dashboard')"><span class="tab-dot" style="background:var(--green)"></span>Dashboard</div>
-  <div class="tab" onclick="switchTab('request')" id="tab-request"><span class="tab-dot" style="background:var(--amber)"></span>📋 ขอเบิกของ <span id="req-badge" style="display:none;background:var(--coral);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px">0</span></div>
-  <div class="tab" onclick="switchTab('config')"><span class="tab-dot" style="background:var(--text3)"></span>⚙️ Config</div>
+  <div class="tab active" data-tab="gr" onclick="switchTab('gr')"><span class="tab-dot" style="background:var(--blue)"></span>รับของ (GR)</div>
+  <div class="tab" data-tab="issue" onclick="switchTab('issue')"><span class="tab-dot" style="background:var(--teal)"></span>Issue / Transfer</div>
+  <div class="tab" data-tab="writeoff" onclick="switchTab('writeoff')"><span class="tab-dot" style="background:var(--coral)"></span>Write-off</div>
+  <div class="tab" data-tab="report" onclick="switchTab('report')"><span class="tab-dot" style="background:var(--purple)"></span>Report</div>
+  <div class="tab" data-tab="dashboard" onclick="switchTab('dashboard')"><span class="tab-dot" style="background:var(--green)"></span>Dashboard</div>
+  <div class="tab" data-tab="request" onclick="switchTab('request')" id="tab-request"><span class="tab-dot" style="background:var(--amber)"></span>📋 ขอเบิกของ <span id="req-badge" style="display:none;background:var(--coral);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px">0</span></div>
+  <div class="tab" data-tab="config" onclick="switchTab('config')"><span class="tab-dot" style="background:var(--text3)"></span>⚙️ Config</div>
 </div>
 
 <!-- CONTENT -->
@@ -995,32 +995,36 @@ function modalPrompt(message,defaultVal='',title='แก้ไขข้อมู
 // User mode  : index.html?mode=request  (ทีม — เห็นแค่หน้าขอเบิก)
 const IS_USER_MODE = new URLSearchParams(location.search).get('mode') === 'request';
 
+const USER_ALLOWED_TABS = new Set(['request','report','dashboard']);
+
 function applyUserMode(){
   if(!IS_USER_MODE) return;
-  // ซ่อน tab ที่ user ไม่ควรเห็น
-  // order: 0=gr, 1=issue, 2=writeoff, 3=report, 4=dashboard, 5=request, 6=config
-  const ALLOWED = new Set([3, 4, 5]); // report, dashboard, request
-  const tabs = document.querySelectorAll('.nav .tab');
-  tabs.forEach((el, i) => { if(!ALLOWED.has(i)) el.style.display = 'none'; });
-  // ซ่อน admin queue (เฉพาะ Jack ต้องเห็น)
-  const queueCard = $('req-pending-card');
-  if(queueCard) queueCard.style.display = 'none';
+  // ซ่อน tab ที่ user ไม่ควรเห็น ใช้ data-tab attribute
+  document.querySelectorAll('.nav .tab').forEach(el=>{
+    if(!USER_ALLOWED_TABS.has(el.dataset.tab)) el.style.display='none';
+  });
+  // ซ่อน admin queue
+  const queueCard=$('req-pending-card');
+  if(queueCard) queueCard.style.display='none';
   // ปรับ subtitle
-  const sub = document.querySelector('.topbar-sub');
-  if(sub) sub.textContent = 'แบบฟอร์มขอเบิกของ — Banpu NEXT';
+  const sub=document.querySelector('.topbar-sub');
+  if(sub) sub.textContent='แบบฟอร์มขอเบิกของ — Banpu NEXT';
 }
 
 // CLOCK
 function updateClock(){$('clock').textContent=new Date().toLocaleString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
 setInterval(updateClock,1000);updateClock();
 
-// TAB
+// TAB — ใช้ data-tab แทน index เพื่อไม่ให้ hidden tab ทำให้ index เพี้ยน
 function switchTab(id){
-  if(IS_USER_MODE && id!=='request') return; // user mode: lock to request tab only
+  if(IS_USER_MODE && !USER_ALLOWED_TABS.has(id)) return;
   const ALL_TABS=['gr','issue','writeoff','report','dashboard','request','config'];
-  const tabEls=document.querySelectorAll('.tab');
-  ALL_TABS.forEach((t,i)=>{
-    if(tabEls[i]) tabEls[i].classList.toggle('active',t===id);
+  // toggle active บน tab elements โดยใช้ data-tab
+  document.querySelectorAll('.nav .tab').forEach(el=>{
+    el.classList.toggle('active', el.dataset.tab===id);
+  });
+  // toggle active บน page elements
+  ALL_TABS.forEach(t=>{
     const pg=$('page-'+t);
     if(pg) pg.classList.toggle('active',t===id);
   });
