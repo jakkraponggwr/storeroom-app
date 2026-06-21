@@ -3058,11 +3058,17 @@ async function pullRequestsFromSharePoint(){
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
     const spItems=await res.json();
-    let added=0;
+    let added=0, updated=0;
     for(const sp of (Array.isArray(spItems)?spItems:[])){
       const reqId=sp.Title||'';
-      const exists=(REQ.queue||[]).find(r=>r.request_id===reqId);
-      if(!exists && reqId){
+      const existing=(REQ.queue||[]).find(r=>r.request_id===reqId);
+      if(existing){
+        // Update sp_item_id if missing
+        if(!existing.sp_item_id && sp.ID){
+          existing.sp_item_id=sp.ID;
+          updated++;
+        }
+      } else if(reqId){
         REQ.queue.push({
           request_id: reqId,
           requester_name: sp.Requester||'',
@@ -3086,7 +3092,7 @@ async function pullRequestsFromSharePoint(){
       }
     }
     saveReq(); renderReqQueue(); renderReqHistory(); updateReqBadge();
-    if(st){ st.style.color='var(--teal)'; st.textContent=`✅ ดึง ${spItems.length} รายการ (เพิ่มใหม่ ${added} รายการ)`; }
+    if(st){ st.style.color='var(--teal)'; st.textContent=`✅ ดึง ${spItems.length} รายการ (เพิ่มใหม่ ${added} / อัพเดท ${updated} รายการ)`; }
     toast(`☁️ Pull จาก SharePoint: ${spItems.length} requests`);
   }catch(e){
     console.error('Pull error:',e);
