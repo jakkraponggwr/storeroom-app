@@ -3302,26 +3302,22 @@ async function submitRequest(){
 
 async function sendToFlowURL(payload){
   try{
-    const itemsSummary=(payload.items||[]).map(it=>
-      `• ${it.mat_code} — ${it.item_name}: ${it.qty} ${it.unit||''} (Stock คงเหลือ: ${it.stock_remaining})`
-    ).join('\n');
     const body={
-      request_id:payload.request_id||'',
-      requester_name:payload.requester_name||'',
-      department:payload.department||'',
-      storeroom:payload.storeroom||'',
-      items_summary:itemsSummary,
-      items_count:(payload.items||[]).length,
-      needed_date:payload.needed_date||'',
-      note:payload.note||'—',
-      submitted_at:payload.submitted_at||'',
-      is_test:payload.is_test||false
+      request_id: payload.request_id||'',
+      requester_name: payload.requester_name||'',
+      department: payload.department||'',
+      storeroom: payload.storeroom||'',
+      items: payload.items||[],
+      needed_date: payload.needed_date||'',
+      note: payload.note||'—',
+      submitted_at: payload.submitted_at||'',
+      is_test: payload.is_test||false
     };
     await fetch(CFG.flowUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(body),
-      mode:'no-cors'
+      mode:'cors'
     });
     return true;
   }catch(e){ console.error('Flow error:',e); return false; }
