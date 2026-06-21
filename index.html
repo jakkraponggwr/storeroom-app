@@ -1006,7 +1006,7 @@ function switchTab(id){
   if(id==='report'){updateStats();renderReport();}
   if(id==='issue'||id==='writeoff') populateItemSelects();
   if(id==='dashboard') renderDashboard();
-  if(id==='request'){ populateReqDatalist(); renderReqQueue(); renderReqHistory(); }
+  if(id==='request'){ populateReqDatalist(); renderReqQueue(); renderReqHistory(); if(CFG.readRequestsUrl) pullRequestsFromSharePoint(); }
   if(id==='config') loadConfig();
 }
 
@@ -3399,8 +3399,13 @@ async function approveRequest(reqId){
   }
   req.status='approved'; req.approved_at=new Date().toLocaleString('th-TH');
   saveReq(); saveState();
-  // Update SharePoint status via Flow D
-  if(req.sp_item_id) updateSPRequestStatus(req.sp_item_id,'Approved','ตัด Stock แล้ว');
+  // Update SharePoint status via Flow D — ใช้ sp_item_id ที่ได้จาก Pull
+  if(req.sp_item_id){
+    updateSPRequestStatus(req.sp_item_id,'Approved','ตัด Stock แล้ว');
+  } else {
+    // ถ้าไม่มี sp_item_id ให้ Pull แล้วค่อย update
+    console.warn('No sp_item_id for', req.request_id, '— SP status not updated');
+  }
   renderReqQueue(); renderReqHistory(); renderTxnLog(); populateItemSelects(); renderDashboard(); updateStats();
   if(issued>0) toast(`✅ ตัด Stock สำเร็จ ${issued} รายการ${skipped>0?' ('+skipped+' รายการ stock ไม่พอ)':''}`);
   else toast('⚠️ ไม่สามารถตัด Stock ได้ — กรุณาตรวจสอบ stock คงเหลือ');
