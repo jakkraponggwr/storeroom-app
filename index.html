@@ -3108,7 +3108,7 @@ async function updateSPRequestStatus(spItemId, status, note){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ spItemId, status, note: note||'' }),
-      mode:'no-cors'
+      mode:'cors'
     });
   }catch(e){ console.error('Update status error:',e); }
 }
