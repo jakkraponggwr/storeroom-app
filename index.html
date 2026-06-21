@@ -742,7 +742,11 @@ textarea{resize:vertical;min-height:64px;line-height:1.6}
     <div class="card" id="req-pending-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div class="card-title" style="margin-bottom:0">📥 คิว Request ที่รอดำเนินการ</div>
-        <span style="font-size:11px;color:var(--text3)">กด "ตัด Stock" เพื่อ Issue ทันที</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn btn-secondary" onclick="pullRequestsFromSharePoint()" style="font-size:11px;padding:5px 10px;color:var(--purple);border-color:var(--purple)">☁️ Pull จาก SharePoint</button>
+          <span id="sp-pull-status" style="font-size:11px;color:var(--text3)"></span>
+          <span style="font-size:11px;color:var(--text3)">กด "ตัด Stock" เพื่อ Issue ทันที</span>
+        </div>
       </div>
       <div id="req-queue-list">
         <div style="color:var(--text3);text-align:center;padding:24px;font-size:12px">ยังไม่มี Request ที่รอดำเนินการ</div>
@@ -857,17 +861,36 @@ textarea{resize:vertical;min-height:64px;line-height:1.6}
       <div style="margin-bottom:20px">
         <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)">🔄 SharePoint Stock Sync</div>
         <div class="field" style="margin-bottom:10px">
-          <label>SharePoint Sync Flow URL</label>
+          <label>SharePoint Sync Flow URL (Flow A)</label>
           <input id="cfg-sync-url" type="text" placeholder="https://...powerautomate.../storeroom-stock-sync..." style="font-size:11px;font-family:monospace">
-          <span style="font-size:10px;color:var(--text3);margin-top:3px;display:block">HTTP POST URL จาก "Storeroom Stock Sync" Flow</span>
+          <span style="font-size:10px;color:var(--text3);margin-top:3px;display:block">HTTP POST URL จาก "Storeroom - Sync Stock" Flow</span>
         </div>
         <div class="btn-row" style="margin-top:8px">
           <button class="btn btn-primary" onclick="syncToSharePoint()" style="background:var(--blue2)">🔄 Sync Stock → SharePoint</button>
           <span id="sync-status" style="font-size:11px;color:var(--text3)"></span>
         </div>
-        <div style="margin-top:8px;font-size:11px;color:var(--text3);line-height:1.6">
-          กดปุ่มนี้เพื่ออัปเดต Stock Balance บน SharePoint List ทีมงานจะเห็นข้อมูล stock ล่าสุดทันที
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)">📥 Pull Requests จาก SharePoint</div>
+        <div class="field" style="margin-bottom:10px">
+          <label>Read Requests Flow URL (Flow C)</label>
+          <input id="cfg-read-requests-url" type="text" placeholder="https://...powerautomate.../read-requests..." style="font-size:11px;font-family:monospace">
+          <span style="font-size:10px;color:var(--text3);margin-top:3px;display:block">HTTP POST URL จาก "Storeroom - Read Requests" Flow</span>
         </div>
+        <div class="field" style="margin-bottom:10px">
+          <label>Update Status Flow URL (Flow D)</label>
+          <input id="cfg-update-status-url" type="text" placeholder="https://...powerautomate.../update-status..." style="font-size:11px;font-family:monospace">
+          <span style="font-size:10px;color:var(--text3);margin-top:3px;display:block">HTTP POST URL จาก "Storeroom - Update Request Status" Flow</span>
+        </div>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-primary" onclick="pullRequestsFromSharePoint()" style="background:var(--purple)">☁️ Pull Requests จาก SharePoint</button>
+          <span id="sp-pull-status" style="font-size:11px;color:var(--text3)"></span>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text3);line-height:1.6">
+          ดึง Request ที่ทีมกรอกผ่าน SharePoint มาแสดงใน Queue ของ Jack
+        </div>
+      </div>
       </div>
 
       <div class="btn-row">
@@ -2979,22 +3002,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // CONFIG
 // ══════════════════════════════════════════
 const CFG_KEY = 'storeroom_cfg_v1';
-let CFG = { flowUrl:'', approverName:'', approverEmail:'', siteName:'', syncUrl:'' };
+let CFG = { flowUrl:'', approverName:'', approverEmail:'', siteName:'', syncUrl:'', syncRequestsUrl:'', readRequestsUrl:'', updateStatusUrl:'' };
 
 function loadConfig(){
   try{ const r=localStorage.getItem(CFG_KEY); if(r) CFG={...CFG,...JSON.parse(r)}; }catch(e){}
-  const latestUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/3f686149ad9646fa9d44a1acd018e65a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5GJtnPEkm6ouPVqp17Ow6ZEivomQdGnRHKpkTSjbYT8';
-  CFG.flowUrl=latestUrl;
-  // Pre-fill sync URL if not set
-  if(!CFG.syncUrl){
-    CFG.syncUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/15bc5f6d792b4a069a49719a2f85a311/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=2srasvTIZOxMT8M-FxI6iIWjUj11z0R3jCra4dSfCDg';
-  }
+  // Flow A — Notification (Request submit)
+  CFG.flowUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ecf4c154344d4d7d8d82bb834ffbd843/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=d8IXMifjZape_a-3c-3y1SCyD2YFvYZRer87UTxcY74';
+  // Flow A — Sync Stock Balance
+  CFG.syncUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f8f37f0ae84f4f1197e576b9b085b795/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=wTOAMrgpWwap8GHUNj14x-pdsvCGFuqAtMvJ90DFMJs';
+  // Flow C — Read Requests from SharePoint
+  CFG.readRequestsUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/882136f2e4a84fe99a57eb423a55b58d/triggers/manual/paths/invoke?api-version=1';
+  // Flow D — Update Request Status
+  CFG.updateStatusUrl='https://defaultbbb8da8ff374490f91902242176e11.7c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/7a7a434e406646f7a8e770c259faa42c/triggers/manual/paths/invoke?api-version=1';
   saveConfigData();
   if($('cfg-flow-url')) $('cfg-flow-url').value=CFG.flowUrl||'';
   if($('cfg-approver-name')) $('cfg-approver-name').value=CFG.approverName||'';
   if($('cfg-approver-email')) $('cfg-approver-email').value=CFG.approverEmail||'';
   if($('cfg-site-name')) $('cfg-site-name').value=CFG.siteName||'';
   if($('cfg-sync-url')) $('cfg-sync-url').value=CFG.syncUrl||'';
+  if($('cfg-read-requests-url')) $('cfg-read-requests-url').value=CFG.readRequestsUrl||'';
+  if($('cfg-update-status-url')) $('cfg-update-status-url').value=CFG.updateStatusUrl||'';
 }
 
 function saveConfigData(){
@@ -3003,6 +3030,8 @@ function saveConfigData(){
   CFG.approverEmail=($('cfg-approver-email')||{}).value||CFG.approverEmail;
   CFG.siteName=($('cfg-site-name')||{}).value||CFG.siteName;
   CFG.syncUrl=($('cfg-sync-url')||{}).value||CFG.syncUrl;
+  CFG.readRequestsUrl=($('cfg-read-requests-url')||{}).value||CFG.readRequestsUrl;
+  CFG.updateStatusUrl=($('cfg-update-status-url')||{}).value||CFG.updateStatusUrl;
   localStorage.setItem(CFG_KEY,JSON.stringify(CFG));
 }
 
@@ -3012,6 +3041,65 @@ function saveConfig(){
   st.style.color='var(--teal)'; st.textContent='✅ บันทึกแล้ว';
   setTimeout(()=>st.textContent='',2500);
   toast('บันทึก Config เรียบร้อยแล้วครับ');
+}
+
+// ── PULL REQUESTS FROM SHAREPOINT (Flow C) ──
+async function pullRequestsFromSharePoint(){
+  saveConfigData();
+  const st=$('sp-pull-status');
+  if(!CFG.readRequestsUrl){ if(st){ st.style.color='var(--coral)'; st.textContent='⚠️ ไม่มี Read Requests URL'; } return; }
+  if(st){ st.style.color='var(--text3)'; st.textContent='⏳ กำลังดึงข้อมูล...'; }
+  try{
+    const res=await fetch(CFG.readRequestsUrl,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({}),
+      mode:'cors'
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const spItems=(data.value||data||[]);
+    // Merge SP items into REQ.queue (add if reqId not already exists)
+    let added=0;
+    for(const sp of spItems){
+      const reqId=sp.Title||sp.ReqID||'';
+      const exists=(REQ.queue||[]).find(r=>r.request_id===reqId);
+      if(!exists && reqId){
+        REQ.queue.push({
+          request_id: reqId,
+          requester_name: sp.Requester||'',
+          department: sp.Requester||'',
+          items:[{mat_code:sp.MatCode||'',item_name:sp.ItemName||'',qty:sp.Qty||0,unit:sp.Unit||'',stock_remaining:0,key:''}],
+          needed_date: sp.NeededDate?sp.NeededDate.slice(0,10):'',
+          note: sp.Remark||'',
+          storeroom: CFG.siteName||'BNS1-TIMCO',
+          status: (sp.StatusValue||sp.Status||'pending').toLowerCase(),
+          submitted_at: sp.Created?new Date(sp.Created).toLocaleString('th-TH'):'',
+          sp_item_id: sp.ID||sp.id||null
+        });
+        added++;
+      }
+    }
+    saveReq(); renderReqQueue(); renderReqHistory(); updateReqBadge();
+    if(st){ st.style.color='var(--teal)'; st.textContent=`✅ ดึง ${spItems.length} รายการ (เพิ่มใหม่ ${added} รายการ)`; }
+    toast(`☁️ Pull จาก SharePoint: ${spItems.length} requests`);
+  }catch(e){
+    console.error('Pull error:',e);
+    if(st){ st.style.color='var(--coral)'; st.textContent='❌ Pull ไม่ได้ — เช็ค CORS / Flow URL'; }
+  }
+}
+
+// ── UPDATE REQUEST STATUS IN SHAREPOINT (Flow D) ──
+async function updateSPRequestStatus(spItemId, status, note){
+  if(!CFG.updateStatusUrl || !spItemId) return;
+  try{
+    await fetch(CFG.updateStatusUrl,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ spItemId, status, note: note||'' }),
+      mode:'no-cors'
+    });
+  }catch(e){ console.error('Update status error:',e); }
 }
 
 async function syncToSharePoint(){
@@ -3300,6 +3388,8 @@ async function approveRequest(reqId){
   }
   req.status='approved'; req.approved_at=new Date().toLocaleString('th-TH');
   saveReq(); saveState();
+  // Update SharePoint status via Flow D
+  if(req.sp_item_id) updateSPRequestStatus(req.sp_item_id,'Approved','ตัด Stock แล้ว');
   renderReqQueue(); renderReqHistory(); renderTxnLog(); populateItemSelects(); renderDashboard(); updateStats();
   if(issued>0) toast(`✅ ตัด Stock สำเร็จ ${issued} รายการ${skipped>0?' ('+skipped+' รายการ stock ไม่พอ)':''}`);
   else toast('⚠️ ไม่สามารถตัด Stock ได้ — กรุณาตรวจสอบ stock คงเหลือ');
@@ -3310,6 +3400,8 @@ async function rejectRequest(reqId){
   if(!ok) return;
   const req=(REQ.queue||[]).find(r=>r.request_id===reqId);
   if(req){ req.status='rejected'; req.rejected_at=new Date().toLocaleString('th-TH'); }
+  // Update SharePoint status via Flow D
+  if(req && req.sp_item_id) updateSPRequestStatus(req.sp_item_id,'Rejected','ปฏิเสธแล้ว');
   saveReq(); renderReqQueue(); renderReqHistory();
   toast('ปฏิเสธ Request แล้วครับ');
 }
