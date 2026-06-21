@@ -3246,10 +3246,11 @@ function populateReqDatalist(){
     .join('');
 }
 
+let _reqRowCounter = 0;
 function addReqRow(){
   const tbody=$('req-rows');
   if(!tbody) return;
-  const idx=Date.now(); // unique id to avoid collision when rows removed
+  const idx = 'r' + (++_reqRowCounter) + '_' + Date.now(); // guaranteed unique
   const tr=document.createElement('tr');
   tr.id='req-row-'+idx;
   tr.dataset.key='';
@@ -3437,11 +3438,25 @@ async function submitRequest(){
     if(!qtyInp) continue;
     const qty=parseFloat(qtyInp.value)||0;
     if(qty<=0) continue;
-    if(key && S.balance[key]){
-      const b=S.balance[key];
-      items.push({mat_code:b.code,item_name:b.name,qty,unit:b.unit,stock_remaining:b.qty,key});
+    // ถ้า key หายให้ fallback หา key จาก input text value
+    let resolvedKey = (key && S.balance[key]) ? key : null;
+    if(!resolvedKey){
+      const inp=tr.querySelector('input[type=text]');
+      const val=(inp?.value||'').trim().toLowerCase();
+      if(val){
+        resolvedKey = Object.keys(S.balance).find(k=>{
+          const b=S.balance[k];
+          return b.code.toLowerCase()===val.split(' ')[0].replace(/[^a-z0-9]/g,'') ||
+                 (b.code+' — '+b.name).toLowerCase()===val ||
+                 b.name.toLowerCase()===val;
+        })||null;
+      }
+    }
+    if(resolvedKey && S.balance[resolvedKey]){
+      const b=S.balance[resolvedKey];
+      items.push({mat_code:b.code,item_name:b.name,qty,unit:b.unit,stock_remaining:b.qty,key:resolvedKey});
     } else {
-      // freetext fallback
+      // freetext fallback — ไม่รู้จัก item
       const inp=tr.querySelector('input[type=text]');
       const val=(inp?.value||'').trim();
       if(val) items.push({mat_code:'?',item_name:val,qty,unit:'',stock_remaining:'?',key:''});
@@ -3547,8 +3562,16 @@ async function approveRequest(reqId){
   if(!ok) return;
   let issued=0, skipped=0;
   for(const it of (req.items||[])){
-    if(!it.key||!S.balance[it.key]){ skipped++; continue; }
-    const item=S.balance[it.key];
+    // resolve key: ใช้ it.key ก่อน ถ้าไม่มีให้ fallback match จาก mat_code+store
+    let resolvedKey = (it.key && S.balance[it.key]) ? it.key : null;
+    if(!resolvedKey){
+      resolvedKey = Object.keys(S.balance).find(k=>{
+        const b=S.balance[k];
+        return b.code===it.mat_code || b.name===it.item_name;
+      })||null;
+    }
+    if(!resolvedKey){ skipped++; continue; }
+    const item=S.balance[resolvedKey];
     if(item.qty<it.qty){ skipped++; continue; }
     const id=nid('TXN');
     const rec={id,type:'ISSUE',code:item.code,item:item.name,unit:item.unit,store:item.store,qty:it.qty,from:item.store,to:req.department,by:req.requester_name,wo:req.request_id||'',date:today()};
