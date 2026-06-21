@@ -768,8 +768,21 @@ textarea{resize:vertical;min-height:64px;line-height:1.6}
       </div>
       <div class="row row-2" style="margin-bottom:10px">
         <div class="field">
-          <label>วันที่ต้องการ (urgency) *</label>
-          <input id="req-needed-date" type="date">
+          <label>วันที่ต้องการใช้ของ *</label>
+          <!-- hidden native input เก็บค่าจริง -->
+          <input id="req-needed-date" type="date" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0" oninput="updateDateBadge()">
+          <!-- custom trigger button -->
+          <div id="req-date-display"
+            onclick="document.getElementById('req-needed-date').showPicker?document.getElementById('req-needed-date').showPicker():document.getElementById('req-needed-date').focus()"
+            style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color .2s;user-select:none"
+            onmouseenter="this.style.borderColor='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)'">
+            <span style="font-size:18px;line-height:1">📅</span>
+            <div style="flex:1">
+              <div id="req-date-text" style="font-size:13px;color:var(--text2)">เลือกวันที่...</div>
+              <div id="req-date-hint" style="font-size:10px;margin-top:1px;color:var(--text3)"></div>
+            </div>
+            <span id="req-date-badge" style="display:none;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px"></span>
+          </div>
         </div>
         <div class="field">
           <label>Storeroom</label>
@@ -803,8 +816,9 @@ textarea{resize:vertical;min-height:64px;line-height:1.6}
       </div>
 
       <div class="field" style="margin-top:10px">
-        <label>หมายเหตุ / เหตุผล</label>
-        <textarea id="req-note" placeholder="ระบุเหตุผลการขอเบิก หรือ WO Number (ถ้ามี)" style="min-height:52px"></textarea>
+        <label>โครงการ / เหตุผลการเบิก</label>
+        <input id="req-project" type="text" placeholder="เช่น BNS1-TIMCO Phase 2, PM Annual 2026" style="margin-bottom:6px">
+        <textarea id="req-note" placeholder="หมายเหตุเพิ่มเติม หรือ WO Number (ถ้ามี)" style="min-height:48px"></textarea>
       </div>
 
       <div class="btn-row">
@@ -3021,6 +3035,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   populateReqDatalist();
   const d = new Date(); d.setDate(d.getDate()+3);
   if($('req-needed-date')) $('req-needed-date').value = d.toISOString().slice(0,10);
+  updateDateBadge();
 
   // Apply user mode last (after all elements are rendered)
   if(IS_USER_MODE){
@@ -3341,6 +3356,51 @@ function onReqItemInput(idx){
   }
 }
 
+function updateDateBadge(){
+  const inp = document.getElementById('req-needed-date');
+  const badge = document.getElementById('req-date-badge');
+  const hint = document.getElementById('req-date-hint');
+  const dateText = document.getElementById('req-date-text');
+
+  if(!inp || !inp.value){
+    if(badge) badge.style.display='none';
+    if(hint) hint.textContent='';
+    if(dateText){ dateText.textContent='เลือกวันที่...'; dateText.style.color='var(--text2)'; }
+    return;
+  }
+
+  // แสดงวันที่แบบไทย
+  const target = new Date(inp.value); target.setHours(0,0,0,0);
+  const thDate = target.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  if(dateText){ dateText.textContent = thDate; dateText.style.color='var(--text)'; }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.round((target - today)/(1000*60*60*24));
+  if(!badge || !hint) return;
+
+  if(diff < 0){
+    badge.style.cssText='display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:var(--coral-bg);color:var(--coral)';
+    badge.textContent='เลยกำหนด';
+    hint.style.color='var(--coral)'; hint.textContent='⚠️ วันที่เลยกำหนดแล้ว';
+  } else if(diff === 0){
+    badge.style.cssText='display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:var(--coral-bg);color:var(--coral)';
+    badge.textContent='วันนี้ 🔴';
+    hint.style.color='var(--coral)'; hint.textContent='ต้องการวันนี้ — ด่วนมาก';
+  } else if(diff <= 2){
+    badge.style.cssText='display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:var(--amber-bg);color:var(--amber)';
+    badge.textContent='ด่วน! '+diff+' วัน';
+    hint.style.color='var(--amber)'; hint.textContent='ต้องการใน '+diff+' วัน';
+  } else if(diff <= 7){
+    badge.style.cssText='display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:var(--blue-bg);color:var(--blue)';
+    badge.textContent='อีก '+diff+' วัน';
+    hint.style.color='var(--text2)'; hint.textContent='ต้องการใน '+diff+' วัน';
+  } else {
+    badge.style.cssText='display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:var(--teal-bg);color:var(--teal)';
+    badge.textContent='อีก '+diff+' วัน';
+    hint.style.color='var(--text3)'; hint.textContent='ยังมีเวลา '+diff+' วัน';
+  }
+}
+
 function clearReqForm(){
   if($('req-name')) $('req-name').value='';
   if($('req-dept')) $('req-dept').value='';
@@ -3349,8 +3409,10 @@ function clearReqForm(){
   const d=new Date(); d.setDate(d.getDate()+3);
   if($('req-needed-date')) $('req-needed-date').value=d.toISOString().slice(0,10);
   if($('req-rows')) $('req-rows').innerHTML='';
+  if($('req-project')) $('req-project').value='';
   addReqRow(); addReqRow(); addReqRow();
   if($('req-send-status')) $('req-send-status').textContent='';
+  setTimeout(updateDateBadge, 0);
 }
 
 let _reqLock=false;
@@ -3360,6 +3422,7 @@ async function submitRequest(){
   const name=($('req-name')||{}).value?.trim()||'';
   const dept=($('req-dept')||{}).value?.trim()||'';
   const neededDate=($('req-needed-date')||{}).value||'';
+  const project=($('req-project')||{}).value?.trim()||'';
   const note=($('req-note')||{}).value?.trim()||'';
   const storeroom=($('req-storeroom')||{}).value||CFG.siteName||'—';
 
@@ -3389,7 +3452,8 @@ async function submitRequest(){
 
   const submittedAt=new Date().toLocaleString('th-TH');
   const reqId='REQ-'+Date.now();
-  const payload={request_id:reqId,requester_name:name,department:dept,storeroom,items,needed_date:neededDate,note:note||'—',submitted_at:submittedAt,is_test:false};
+  const noteWithProject = project ? '[โครงการ: '+project+'] '+(note||'') : (note||'—');
+  const payload={request_id:reqId,requester_name:name,department:dept,storeroom,project:project||'—',items,needed_date:neededDate,note:noteWithProject.trim()||'—',submitted_at:submittedAt,is_test:false};
 
   if(!REQ.queue) REQ.queue=[];
   REQ.queue.unshift({...payload,status:'pending'});
