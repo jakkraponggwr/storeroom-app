@@ -990,12 +990,33 @@ function modalPrompt(message,defaultVal='',title='แก้ไขข้อมู
   return showModal({title,message,showInput:true,inputValue:defaultVal,okText:'บันทึก'});
 }
 
+// ══ MODE DETECTION ══
+// Admin mode : index.html            (Jack — เห็นทุก tab)
+// User mode  : index.html?mode=request  (ทีม — เห็นแค่หน้าขอเบิก)
+const IS_USER_MODE = new URLSearchParams(location.search).get('mode') === 'request';
+
+function applyUserMode(){
+  if(!IS_USER_MODE) return;
+  // ซ่อน tab ทั้งหมดยกเว้น request
+  document.querySelectorAll('.tab').forEach(el=>{
+    const fn=el.getAttribute('onclick')||'';
+    if(!fn.includes("'request'")) el.style.display='none';
+  });
+  // ซ่อน admin queue (เฉพาะ Jack ต้องเห็น)
+  const queueCard=$('req-pending-card');
+  if(queueCard) queueCard.style.display='none';
+  // ปรับ subtitle
+  const sub=document.querySelector('.topbar-sub');
+  if(sub) sub.textContent='แบบฟอร์มขอเบิกของ — Banpu NEXT';
+}
+
 // CLOCK
 function updateClock(){$('clock').textContent=new Date().toLocaleString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
 setInterval(updateClock,1000);updateClock();
 
 // TAB
 function switchTab(id){
+  if(IS_USER_MODE && id!=='request') return; // user mode: lock to request tab only
   const ALL_TABS=['gr','issue','writeoff','report','dashboard','request','config'];
   const tabEls=document.querySelectorAll('.tab');
   ALL_TABS.forEach((t,i)=>{
@@ -2996,6 +3017,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
   populateReqDatalist();
   const d = new Date(); d.setDate(d.getDate()+3);
   if($('req-needed-date')) $('req-needed-date').value = d.toISOString().slice(0,10);
+
+  // Apply user mode last (after all elements are rendered)
+  if(IS_USER_MODE){
+    applyUserMode();
+    switchTab('request');
+  }
 });
 
 // ══════════════════════════════════════════
@@ -3203,28 +3230,95 @@ function populateReqDatalist(){
 function addReqRow(){
   const tbody=$('req-rows');
   if(!tbody) return;
-  const idx=tbody.rows.length;
+  const idx=Date.now(); // unique id to avoid collision when rows removed
   const tr=document.createElement('tr');
   tr.id='req-row-'+idx;
+  tr.dataset.key='';
   tr.innerHTML=`
-    <td style="padding:4px 6px">
-      <input list="req-items-datalist" id="req-item-${idx}" placeholder="พิมพ์ MAT Code หรือชื่อรายการ..."
-        style="width:100%;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px"
-        oninput="onReqItemInput(${idx})">
+    <td style="padding:4px 6px;position:relative">
+      <div style="position:relative">
+        <input type="text" id="req-item-${idx}"
+          placeholder="🔍 พิมพ์ MAT Code หรือชื่อสินค้า..."
+          autocomplete="off"
+          style="width:100%;padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;outline:none;transition:border-color .2s"
+          data-idx="${idx}">
+        <div id="req-dd-${idx}" style="display:none;position:absolute;top:calc(100%+2px);left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);z-index:300;max-height:220px;overflow-y:auto;box-shadow:0 8px 20px rgba(0,0,0,.4)"></div>
+      </div>
     </td>
     <td style="padding:4px 6px">
-      <input type="number" id="req-qty-${idx}" min="1" placeholder="0"
-        style="width:80px;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px"
-        oninput="onReqItemInput(${idx})">
+      <input type="number" id="req-qty-${idx}" min="1" value="" placeholder="0"
+        style="width:72px;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;outline:none">
     </td>
-    <td style="padding:4px 6px;font-size:11px" id="req-stock-${idx}"><span style="color:var(--text3)">—</span></td>
+    <td style="padding:4px 6px;font-size:11px;white-space:nowrap" id="req-stock-${idx}"><span style="color:var(--text3)">—</span></td>
     <td style="padding:4px 6px;text-align:center">
-      <span onclick="removeReqRow(${idx})" style="cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px" title="ลบ">✕</span>
+      <span onclick="removeReqRow('${idx}')" style="cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px" title="ลบ">✕</span>
     </td>`;
   tbody.appendChild(tr);
+
+  // wire up search
+  const inp=document.getElementById('req-item-'+idx);
+  const dd=document.getElementById('req-dd-'+idx);
+
+  function renderDD(q){
+    const items=Object.entries(S.balance);
+    const ql=q.toLowerCase();
+    const filtered=q.length>0
+      ? items.filter(([,v])=>v.name.toLowerCase().includes(ql)||v.code.toLowerCase().includes(ql))
+      : items.slice(0,30); // show first 30 when empty
+    if(!filtered.length){
+      dd.innerHTML=`<div style="padding:10px 12px;font-size:12px;color:var(--text3)">ไม่พบ "${q}"</div>`;
+      dd.style.display='block'; return;
+    }
+    dd.innerHTML=filtered.map(([k,v])=>{
+      const sc=v.qty===0?'var(--coral)':v.qty<=2?'var(--amber)':'var(--teal)';
+      const stockLabel=v.qty===0?'หมด':v.qty<=2?`เหลือ ${v.qty}`:`${v.qty} ${v.unit}`;
+      return `<div class="req-dd-opt" data-key="${k}"
+        style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:var(--text)">${esc(v.name)}</span>
+          <span style="font-size:11px;font-weight:600;color:${sc}">${stockLabel}</span>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">${esc(v.code)} · ${esc(v.store)}</div>
+      </div>`;
+    }).join('');
+    dd.style.display='block';
+    dd.querySelectorAll('.req-dd-opt').forEach(el=>{
+      el.addEventListener('mouseenter',()=>el.style.background='var(--bg3)');
+      el.addEventListener('mouseleave',()=>el.style.background='');
+      el.addEventListener('mousedown',e=>{
+        e.preventDefault();
+        const k=el.dataset.key;
+        const v=S.balance[k];
+        if(!v) return;
+        inp.value=`${v.code} — ${v.name}`;
+        inp.dataset.selectedKey=k;
+        tr.dataset.key=k;
+        dd.style.display='none';
+        // update stock display
+        updateReqStockDisplay(idx, k);
+      });
+    });
+  }
+
+  inp.addEventListener('focus',()=>renderDD(inp.value.trim()));
+  inp.addEventListener('input',()=>{ inp.dataset.selectedKey=''; tr.dataset.key=''; renderDD(inp.value.trim()); updateReqStockDisplay(idx,''); });
+  inp.addEventListener('keydown',e=>{ if(e.key==='Escape') dd.style.display='none'; });
+  inp.addEventListener('blur',()=>setTimeout(()=>{ dd.style.display='none'; },150));
+
+  // focus the new input
+  setTimeout(()=>inp.focus(),50);
 }
 
-function removeReqRow(idx){ const tr=$('req-row-'+idx); if(tr) tr.remove(); }
+function updateReqStockDisplay(idx, key){
+  const stockEl=document.getElementById('req-stock-'+idx);
+  if(!stockEl) return;
+  if(!key||!S.balance[key]){ stockEl.innerHTML='<span style="color:var(--text3)">—</span>'; return; }
+  const v=S.balance[key];
+  const sc=v.qty===0?'var(--coral)':v.qty<=2?'var(--amber)':'var(--teal)';
+  stockEl.innerHTML=`<span style="color:${sc};font-weight:600">${v.qty} ${v.unit}</span>`;
+}
+
+function removeReqRow(idx){ const tr=document.getElementById('req-row-'+idx); if(tr) tr.remove(); }
 
 function onReqItemInput(idx){
   const inp=$('req-item-'+idx);
@@ -3251,7 +3345,7 @@ function clearReqForm(){
   const d=new Date(); d.setDate(d.getDate()+3);
   if($('req-needed-date')) $('req-needed-date').value=d.toISOString().slice(0,10);
   if($('req-rows')) $('req-rows').innerHTML='';
-  addReqRow();
+  addReqRow(); addReqRow(); addReqRow();
   if($('req-send-status')) $('req-send-status').textContent='';
 }
 
@@ -3270,21 +3364,20 @@ async function submitRequest(){
   const items=[];
   const rows=($('req-rows')||{}).rows||[];
   for(let i=0;i<rows.length;i++){
-    const inp=rows[i].querySelector('input[list]');
-    const qtyInp=rows[i].querySelector('input[type=number]');
-    if(!inp||!qtyInp) continue;
-    const val=inp.value.trim();
+    const tr=rows[i];
+    const key=tr.dataset.key||'';
+    const qtyInp=tr.querySelector('input[type=number]');
+    if(!qtyInp) continue;
     const qty=parseFloat(qtyInp.value)||0;
-    if(!val||qty<=0) continue;
-    const match=Object.values(S.balance).find(b=>{
-      const label=`${b.code} — ${b.name} [${b.store}]`;
-      return label===val||b.code===val.split(' ')[0];
-    });
-    if(match){
-      const key=Object.keys(S.balance).find(k=>S.balance[k]===match)||'';
-      items.push({mat_code:match.code,item_name:match.name,qty,unit:match.unit,stock_remaining:match.qty,key});
-    } else if(val){
-      items.push({mat_code:'?',item_name:val,qty,unit:'',stock_remaining:'?',key:''});
+    if(qty<=0) continue;
+    if(key && S.balance[key]){
+      const b=S.balance[key];
+      items.push({mat_code:b.code,item_name:b.name,qty,unit:b.unit,stock_remaining:b.qty,key});
+    } else {
+      // freetext fallback
+      const inp=tr.querySelector('input[type=text]');
+      const val=(inp?.value||'').trim();
+      if(val) items.push({mat_code:'?',item_name:val,qty,unit:'',stock_remaining:'?',key:''});
     }
   }
 
@@ -3455,6 +3548,8 @@ function clearReqHistory(){
   saveReq(); renderReqQueue(); renderReqHistory();
   toast('ล้างประวัติ Request แล้วครับ');
 }
+
+// applyUserMode() is called at end of DOMContentLoaded below
 </script>
 </body>
 </html>
