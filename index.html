@@ -3097,7 +3097,7 @@ async function updateSPRequestStatus(spItemId, status, note){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ spItemId, status, note: note||'' }),
-      mode:'cors'
+      mode:'no-cors'
     });
   }catch(e){ console.error('Update status error:',e); }
 }
@@ -3133,7 +3133,7 @@ async function syncToSharePoint(){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({items}),
-      mode:'cors'
+      mode:'no-cors'
     });
     st.style.color='var(--teal)';
     st.textContent=`✅ Sync สำเร็จ! ${items.length} รายการ → SharePoint`;
